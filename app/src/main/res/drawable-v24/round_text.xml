@@ -1,0 +1,6 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#D4D1D1" /> <!-- Background color of the text field -->
+    <corners android:radius="19dp" /> <!-- Radius of the rounded corners in dp -->
+</shape>
+
+

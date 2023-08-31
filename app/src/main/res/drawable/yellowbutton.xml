@@ -1,0 +1,5 @@
+<!-- rounded_button.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="19dp" /> <!-- Radius of the rounded corners in dp -->
+    <solid android:color="#FFFF00" /> <!-- Background color of the button -->
+</shape>

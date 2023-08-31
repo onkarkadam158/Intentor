@@ -1,0 +1,140 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:padding="16dp">
+    <!-- Title -->
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_centerHorizontal="true"
+        android:text="Registration Form"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        />
+
+    <!-- Email -->
+    <EditText
+        android:id="@+id/editTextEmail"
+        android:background="@drawable/round_text"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Email"
+        android:layout_below="@id/textViewTitle" />
+
+    <!-- Password -->
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:background="@drawable/round_text"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/editTextEmail"
+        android:layout_marginTop="16dp"
+        android:hint="Password"
+        android:inputType="textPassword" />
+
+    <!-- Confirm Password -->
+    <EditText
+        android:id="@+id/editTextConfirmPassword"
+        android:background="@drawable/round_text"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/editTextPassword"
+        android:layout_marginTop="16dp"
+        android:hint="Confirm Password"
+        android:inputType="textPassword" />
+
+    <!-- Date of Birth -->
+    <Button
+        android:id="@+id/buttonSelectDOB"
+        android:background="@drawable/round_button"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/editTextConfirmPassword"
+        android:layout_marginTop="16dp"
+        android:text="Select Date of Birth" />
+
+    <TextView
+        android:id="@+id/textViewSelectedDOB"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/buttonSelectDOB"
+        android:selectAllOnFocus="true"
+        android:layout_marginTop="16dp"
+        android:text="Selected Date: " />
+
+    <!-- Gender -->
+    <RadioGroup
+        android:id="@+id/radioGroupGender"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/textViewSelectedDOB"
+        android:layout_marginTop="0dp"
+        android:orientation="horizontal"
+        tools:ignore="UnknownId">
+
+        <RadioButton
+            android:id="@+id/radioButtonMale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="20dp"
+            android:text="Male" />
+
+        <RadioButton
+            android:id="@+id/radioButtonFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="20dp"
+            android:text="Female" />
+
+        <RadioButton
+            android:id="@+id/radioButtonother"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Other" />
+    </RadioGroup>
+
+    <!-- Education Level -->
+    <TextView
+        android:id="@+id/textViewEducation"
+        android:paddingStart="14dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/radioGroupGender"
+        android:layout_marginTop="16dp"
+        android:text="Education Level" />
+
+    <Spinner
+        android:id="@+id/spinnerEducation"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/textViewEducation"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/round_text"
+        android:entries="@array/education_levels" />
+
+    <!-- Register Button -->
+    <Button
+        android:id="@+id/buttonRegister"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/spinnerEducation"
+        android:layout_marginTop="65dp"
+        android:background="@drawable/round_button"
+        android:enabled="false"
+        android:text="Register" />
+</RelativeLayout>
