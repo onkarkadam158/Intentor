@@ -1,6 +1,7 @@
 package in.ac.iitb.cse.intentor.alertlaunch;
 
 
+import android.animation.ValueAnimator;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.app.usage.UsageEvents;
@@ -13,13 +14,17 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,9 +46,10 @@ public class OverlayService extends Service {
 
     private SharedPreferences mutedApps,mutedAppsWithTime,exitedApps,remindMelaterTimes ;
 
-    TextView countdownTextView;
+    TextView countdownTextView, closePromptMessage;
 
     CountDownTimer countDownTimer;
+    private Vibrator vibrator;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -67,7 +73,7 @@ public class OverlayService extends Service {
         TextView statisticsTextView = overlayView.findViewById(R.id.statisticsTextView);
         statisticsTextView.setText("Todays usage time \n" + getTime() + getUnlockCount() + "\n");
 
-        TextView closePromptMessage = closeAppMessageView.findViewById(R.id.message_prompt_to_close_app);
+        closePromptMessage = closeAppMessageView.findViewById(R.id.message_prompt_to_close_app);
         closePromptMessage.setText("\n\nGreat to see you controlling your Usage.\n Press home or back button to exit the app.\n\n");
 
         countdownTextView = timerView.findViewById(R.id.timer);
@@ -87,7 +93,10 @@ public class OverlayService extends Service {
         );
         // Add the view to the window manager
         windowManager.addView(overlayView, layoutParams);
-
+        windowManager.addView(closeAppMessageView,layoutParams);
+        windowManager.addView(timerView, layoutParams);
+        closeAppMessageView.setVisibility(View.GONE);
+        timerView.setVisibility(View.GONE);
         // creating/accessing SharedPreferences
         mutedApps = getSharedPreferences("appsWhoseInterventionMutedForTheDay", Context.MODE_PRIVATE);
         mutedAppsWithTime = getSharedPreferences("appsWhoseInterventionMutedForTheDayWithAccurateTime", Context.MODE_PRIVATE);
@@ -116,6 +125,7 @@ public class OverlayService extends Service {
         String packageName = intent.getStringExtra("packageName");
         appName = getAppNameFromPackageName(packageName);
         button1.setText("\uD83D\uDE0A  Exit the " + appName + " Now");
+
         String temp = mutedApps.getAll().toString();
         System.out.println(temp+"\ninside on start of overlay MutedApp");
         String temp1=mutedAppsWithTime.getAll().toString();
@@ -230,10 +240,54 @@ public class OverlayService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,   // Make it non-focusable
                 PixelFormat.TRANSLUCENT   // Allow transparency
         );
-        windowManager.addView(closeAppMessageView,layoutParams);
+//        windowManager.addView(closeAppMessageView,layoutParams);
         closeAppMessageView.setVisibility(View.VISIBLE);
+        timerToExitTheAppWhenPressedButton1();
+    }
+    public void timerToExitTheAppWhenPressedButton1(){
+        // Create a CountDownTimer for 2 minutes (2 * 60 * 1000 milliseconds)
+        if(countDownTimer!=null){
+            countDownTimer.cancel();
+        }
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        closeAppMessageView.setBackground(getDrawable(R.drawable.redbutton));
+        countDownTimer = new CountDownTimer(2* 60 * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Update the TextView with the remaining time
+                long minutes = millisUntilFinished / 1000 / 60;
+                long seconds = (millisUntilFinished / 1000) % 60;
+                String message = "\nGreat to see you controlling your Usage. Press home or back button to exit the app.\n\n";
+                closePromptMessage.setText(message+"Time to close: "+ minutes + "M:"+seconds+"S");
+                //small vibrations starts after 30 seconds
+                if(millisUntilFinished<= 90*1000){
+                    if (vibrator != null && seconds%3==0) {
+                        // Vibrate for 500 milliseconds (for every 3 seconds interval)
+                        vibrator.vibrate(500);
+                    }
+                }
+            }
+            @Override
+            public void onFinish() {
+                // Countdown timer has finished
+                countdownTextView.setText("00:00");
+                // You can perform actions here when the countdown complete
+//                closeButton1ClickedPrompt();
+//                showTheOverlay();
+            }
+        };
+
+        // Start the countdown timer
+        countDownTimer.start();
     }
     public void closeButton1ClickedPrompt(){
+        if(countDownTimer!=null){
+            countDownTimer.cancel();
+        }
+        if(vibrator!=null){
+            vibrator.cancel();
+        }
         if(closeAppMessageView.getVisibility()==View.VISIBLE) {
             closeAppMessageView.setVisibility(View.GONE);
         }
@@ -260,6 +314,9 @@ public class OverlayService extends Service {
         if(countDownTimer!=null){
             countDownTimer.cancel();
         }
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        countdownTextView.setBackground(getDrawable(R.drawable.greenbutton));
         countDownTimer = new CountDownTimer(10* 60 * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -267,14 +324,28 @@ public class OverlayService extends Service {
                 long minutes = millisUntilFinished / 1000 / 60;
                 long seconds = (millisUntilFinished / 1000) % 60;
                 countdownTextView.setText(String.format("%02d:%02d", minutes, seconds));
-
+                // Change background color based on remaining time
+                if (millisUntilFinished <= 8 * 60 * 1000) { // 2 minutes remaining
+                    countdownTextView.setBackground(getDrawable(R.drawable.redbutton));
+                } else if (millisUntilFinished <= 9 * 60 * 1000) { // 5 minutes remaining
+                    countdownTextView.setBackground(getDrawable(R.drawable.yellowbutton));
+                }
+                //small vibrations at the end of time
+                if(millisUntilFinished<= 8*60*1000){
+                    if (vibrator != null && seconds%5==0) {
+                        // Vibrate for 500 milliseconds (for every 5 seconds interval)
+                        vibrator.vibrate(500);
+                        System.out.println("inside the vibration it is vibrating");
+                    }
+                }
             }
             @Override
             public void onFinish() {
                 // Countdown timer has finished
                 countdownTextView.setText("00:00");
                 // You can perform actions here when the countdown complete
-
+                closeButton2ClickedPrompt();
+                showTheOverlay();
             }
         };
 
@@ -291,10 +362,53 @@ public class OverlayService extends Service {
                 PixelFormat.TRANSLUCENT   // Allow transparency
         );
         // Add the view to the window manager
-        windowManager.addView(timerView, layoutParams);
+//        windowManager.addView(timerView, layoutParams);
         timerView.setVisibility(View.VISIBLE);
+        final ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+        animator.setDuration(300); // Adjust the duration as needed (in milliseconds)
+
+        timerView.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX, initialY;
+            private float initialTouchX,initialTouchY;
+            boolean ismoving ;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        ismoving = true;
+                        initialX = layoutParams.x;
+                        initialY = layoutParams.y;
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        if(ismoving){
+                            int deltaX = (int) (event.getRawX() - initialTouchX);
+                            int deltaY = (int) (event.getRawY() - initialTouchY);
+                            layoutParams.x = initialX + deltaX;
+                            layoutParams.y = initialY + deltaY;
+                            windowManager.updateViewLayout(timerView, layoutParams);
+                        }
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        // Handle touch release if needed
+                        ismoving = false;
+                        return true;
+                }
+                return false;
+            }
+        });
+
     }
+
     public void closeButton2ClickedPrompt(){
+        timerView.setOnTouchListener(null);
+        if(countDownTimer!=null){
+            countDownTimer.cancel();
+        }
+        if(vibrator!=null){
+            vibrator.cancel();
+        }
         if(timerView.getVisibility()==View.VISIBLE) {
             timerView.setVisibility(View.GONE);
         }
