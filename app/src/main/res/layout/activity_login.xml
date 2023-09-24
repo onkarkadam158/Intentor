@@ -19,19 +19,19 @@
         android:layout_width="match_parent"
         android:layout_height="38dp"
         android:paddingStart="14dp"
-        android:textStyle="bold"
-        android:textSize="20sp"
         android:text="Enter Participation Number:"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/username"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.918"
+        app:layout_constraintVertical_bias="0.93"
         tools:layout_editor_absoluteX="16dp" />
 
     <EditText
         android:id="@+id/username"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_marginTop="108dp"
+        android:layout_marginTop="152dp"
         android:background="@drawable/round_text"
         android:inputType="textEmailAddress"
         android:paddingStart="14dp"
@@ -53,7 +53,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username"
-        app:layout_constraintVertical_bias="0.08" />
+        app:layout_constraintVertical_bias="0.126" />
 
     <Button
         android:id="@+id/login2"
@@ -62,14 +62,14 @@
         android:layout_gravity="start"
         android:layout_marginBottom="64dp"
         android:background="@drawable/round_button"
-        android:enabled="true"
+        android:enabled="false"
         android:text="press"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.031"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login"
-        app:layout_constraintVertical_bias="0.156" />
+        app:layout_constraintVertical_bias="0.199" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

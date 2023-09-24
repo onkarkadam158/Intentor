@@ -1,17 +1,29 @@
 package in.ac.iitb.cse.intentor.ui.login;
+
+import android.Manifest;
 import android.app.AppOpsManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import android.os.Handler;
 import android.provider.Settings;
@@ -27,6 +39,7 @@ import java.io.IOException;
 
 import in.ac.iitb.cse.intentor.R;
 import in.ac.iitb.cse.intentor.alertlaunch.AppLaunchMonitorService;
+import in.ac.iitb.cse.intentor.alertlaunch.OverlayService;
 import in.ac.iitb.cse.intentor.dashboard.DashboardScrollingActivity;
 import in.ac.iitb.cse.intentor.databinding.ActivityLoginBinding;
 import in.ac.iitb.cse.intentor.ApiService;
@@ -35,10 +48,12 @@ import in.ac.iitb.cse.intentor.ApiService;
 public class LoginActivity extends AppCompatActivity {
     private static final int REQUEST_USAGE_STATS_PERMISSION = 101;
     private static final int REQUEST_OVERLAY_PERMISSION = 101;
+    public static final int PERMISSION_REQUEST_CODE = 1;
     private ActivityLoginBinding binding;
-    private static final long LONG_PRESS_DURATION = 4000; // 3 seconds
+    private static final long LONG_PRESS_DURATION = 4000; // 4 seconds
 
-    private static String SERVER_URL = "http://10.129.131.206:8000/login/check_registration_code";
+    private static final String SERVER_URL = "http://10.129.131.206:8000/login/check_registration_code";
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,10 +62,15 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+//      createNotificationMethod(); //notification method
+        Context context = getApplicationContext();
+        Intent notificationServiceIntent = new Intent(this, NotificationForegroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(notificationServiceIntent);
+        }
 
         final EditText usernameEditText = binding.username;
         final Button loginButton = binding.login;
-        final Button pressbutton = binding.login2;
 
         View longPressArea = binding.container;
         longPressArea.setOnLongClickListener(new View.OnLongClickListener() {
@@ -60,38 +80,34 @@ public class LoginActivity extends AppCompatActivity {
                 return true;
             }
         });
-        // Start monitoring app launch in a background thread########################################33333##############
+        // Start monitoring app launch in a background thread ########################################33333##############
         System.out.println("applaunch");
 
-        AppLaunchMonitorService appLaunchMonitorService = new AppLaunchMonitorService();
+//      AppLaunchMonitorService appLaunchMonitorService = new AppLaunchMonitorService();
         Intent serviceIntent = new Intent(getApplicationContext(), AppLaunchMonitorService.class);
-//        startService(serviceIntent);
+        startService(serviceIntent);
+
 //        appLaunchMonitorService.onStartCommand(serviceIntent,0,0);
         System.out.println("started Intent");
 
         //##################################################################################################################################
-        pressbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCustomAlertDialog();
-            }
-        });
+
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateUiWithUser();
-                if(!isValidID(usernameEditText.getText().toString())){
-                    Toast.makeText(getApplicationContext(),"Enter Valid Participation ID", Toast.LENGTH_LONG).show();
-                    return ;
+//                updateUiWithUser();
+                if (!isValidID(usernameEditText.getText().toString())) {
+                    Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_LONG).show();
+                    return;
                 }
                 if (!hasUsageStatsPermission()) {
                     requestUsageStatsPermission();
-                    return ;
+                    return;
                 }
                 if (!isOverlayPermissionGranted()) {
                     requestOverlayPermission();
-                    return ;
+                    return;
                 }
                 new Thread(new Runnable() {
                     @Override
@@ -107,18 +123,17 @@ public class LoginActivity extends AppCompatActivity {
 //                            if(temp.getServerURL()!=null){
 //                                SERVER_URL = temp.getServerURL();
 //                            }
-                            String response = apiService.getApiResponse(SERVER_URL,entered_response_code);
+                            String response = apiService.getApiResponse(SERVER_URL, entered_response_code);
                             if (response != null) {
                                 if (response.contains("status") && response.contains("success")) {
                                     // Perform operations for successful status
                                     updateUiWithUser();
-                                }
-                                else {
+                                } else {
                                     Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
                                 }
                             }
                             System.out.println(response);
-                        }catch (IOException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
 //                            Toast.makeText(getApplicationContext(),"Error! Try Again", Toast.LENGTH_LONG).show();
                         }
@@ -128,57 +143,50 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void showCustomAlertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    public void createNotificationMethod() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "notif0",
+                    "My Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
 
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.dialogue_layout, null);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
 
-        // Set up the text view
-        TextView statisticsTextView = dialogView.findViewById(R.id.statisticsTextView);
-        statisticsTextView.setText("Displaying statistics here\n\n");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "my_channel_id")
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Intentor")
+                .setContentText("Your Todays usage: 00H:00M")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        // Set up buttons
-        Button button1 = dialogView.findViewById(R.id.button1);
-        Button button2 = dialogView.findViewById(R.id.button2);
-        Button button3 = dialogView.findViewById(R.id.button3);
+        // Add actions, if needed
+        // builder.addAction(R.drawable.ic_action, "Action Name", pendingIntent);
+        Notification notification = builder.build();
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        int notificationId = 1; // An integer ID for the notification
 
-        button1.setText("\uD83D\uDE0A  Exit the Instagram Now");
-        button2.setText("\uD83D\uDE10 Remind me again in 10 minutes");
-        button3.setText("\uD83D\uDE22 Mute alert for the rest of the day");
+        // Issue the notification
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it from the user.
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
 
-        button1.setBackgroundColor(getResources().getColor(R.color.green));
-        button2.setBackgroundColor(getResources().getColor(R.color.yellow));
-        button3.setBackgroundColor(getResources().getColor(R.color.red));
+        }
 
+        notificationManager.notify(notificationId, notification);
+        // Create an intent for the destination activity
+        Intent intent = new Intent(LoginActivity.this, DashboardScrollingActivity.class);
 
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Action for Button 1
-            }
-        });
+        // Create a back stack for the intent (optional)
+//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
+//        stackBuilder.addNextIntentWithParentStack(intent);
+//        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Action for Button 2
-            }
-        });
-
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Action for Button 3
-            }
-        });
-
-        builder.setView(dialogView)
-                .setTitle("Alert");
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        // Set the pendingIntent as the notification's click action
+//        builder.setContentIntent(pendingIntent);
     }
+
     private void updateUiWithUser() {
         //  initiate successful logged in experience
         Intent intent = new Intent(LoginActivity.this, DashboardScrollingActivity.class);

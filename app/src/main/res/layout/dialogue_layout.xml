@@ -8,6 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@drawable/rounded_corners"
     android:padding="16dp"
     android:radius="19dp">
 
@@ -17,30 +18,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Statistics will be displayed here"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:gravity="center"/>
 
     <Button
         android:id="@+id/button1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="6dp"
-        android:shape="oval"
-        android:clickable="true"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:radius="20dp"
         android:text="Button 1" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="6dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Button 2" />
 
     <Button
         android:id="@+id/button3"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="6dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Button 3"
     />
 

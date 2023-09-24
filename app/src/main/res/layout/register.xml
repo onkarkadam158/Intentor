@@ -17,9 +17,7 @@
         android:layout_centerHorizontal="true"
         android:text="Registration Form"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        />
+        android:textStyle="bold" />
 
     <!-- Email -->
     <EditText

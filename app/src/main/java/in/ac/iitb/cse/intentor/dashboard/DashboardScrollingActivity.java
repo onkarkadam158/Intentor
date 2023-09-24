@@ -123,7 +123,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
             AppUsageInfo appUsageInfo = appUsageInfoList.get(i);
             float usageTime = appUsageInfo.getTotalUsageTimeOfToday()/(60000); // in minutes
             String appName = appUsageInfo.getAppName();
-            System.out.println(appName+"--time--"+usageTime+"---Packagename--"+appUsageInfo.getPackageName());
+//            System.out.println(appName+"--time--"+usageTime+"---Packagename--"+appUsageInfo.getPackageName());
             entries.add(new BarEntry(i, usageTime, appName)); // Add usage time and app name
         }
 
@@ -159,7 +159,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
             AppUsageInfo appUsageInfo = appUsageInfoList.get(i);
             float visitCountsOfToday = appUsageInfo.getTotalVisitCountsOfToday(); // in numbers
             String appName = appUsageInfo.getAppName();
-            System.out.println(appName+"--visitCountsOfToday--"+visitCountsOfToday+"---Packagename--"+appUsageInfo.getPackageName());
+//            System.out.println(appName+"--visitCountsOfToday--"+visitCountsOfToday+"---Packagename--"+appUsageInfo.getPackageName());
             entries.add(new BarEntry(i, visitCountsOfToday, appName)); // Add usage time and app name
         }
 
