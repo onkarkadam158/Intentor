@@ -62,13 +62,15 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-//      createNotificationMethod(); //notification method
-        Context context = getApplicationContext();
-        Intent notificationServiceIntent = new Intent(this, NotificationForegroundService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(notificationServiceIntent);
+        //notification method
+        // Issue the notification
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
         }
-
+        Intent serviceIntent1 = new Intent(getApplicationContext(), NotificationForegroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent1);
+        }
         final EditText usernameEditText = binding.username;
         final Button loginButton = binding.login;
 
@@ -96,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                updateUiWithUser();
+                updateUiWithUser();
                 if (!isValidID(usernameEditText.getText().toString())) {
                     Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_LONG).show();
                     return;
@@ -175,16 +177,6 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         notificationManager.notify(notificationId, notification);
-        // Create an intent for the destination activity
-        Intent intent = new Intent(LoginActivity.this, DashboardScrollingActivity.class);
-
-        // Create a back stack for the intent (optional)
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
-//        stackBuilder.addNextIntentWithParentStack(intent);
-//        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Set the pendingIntent as the notification's click action
-//        builder.setContentIntent(pendingIntent);
     }
 
     private void updateUiWithUser() {

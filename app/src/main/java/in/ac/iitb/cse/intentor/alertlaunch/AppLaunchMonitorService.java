@@ -93,7 +93,7 @@ public class AppLaunchMonitorService extends Service {
                     }
 //                Adding a delay to avoid excessive CPU usage
                     try {
-                        Thread.sleep(500); // Check every second (adjust interval as needed)
+                        Thread.sleep(500); // Check every half second (adjust interval as needed)
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -112,7 +112,7 @@ public class AppLaunchMonitorService extends Service {
         }
         currentTime = System.currentTimeMillis();
 
-        usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 5000, currentTime);
+        usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 2000, currentTime);
 
         if (usageStatsList != null && !usageStatsList.isEmpty()) {
             for (UsageStats usageStats : usageStatsList) {

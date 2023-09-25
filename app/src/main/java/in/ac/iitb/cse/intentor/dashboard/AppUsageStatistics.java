@@ -9,11 +9,15 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.text.TextUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -108,6 +112,12 @@ public class AppUsageStatistics {
 //        }
         return appUsageInfoList;
     }
+    public static String formatMillisecondsToTime(long milliseconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        Date date = new Date(milliseconds);
+        return sdf.format(date);
+    }
     private Map<String , Long> CountVisitCountsOfToday(){
         Map<String , Long> accessCountOfApps = new HashMap<>(); //return map of access counts of our interested apps
         Calendar calendar = Calendar.getInstance();
@@ -123,22 +133,77 @@ public class AppUsageStatistics {
 
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, currentTime);
         usageStatsManager.queryAndAggregateUsageStats(startTime,currentTime);
-        while (usageEvents.hasNextEvent()) {
+        String lastForegroundApp = null;
+        System.out.println("Printing all the usage stats events\n\n");
+        long whatsappCount=0,instaCount=0,linkedinCount=0,snapchatCount=0,facebookCount=0,youtubeCount=0,twitterCount=0;
+        while(usageEvents.hasNextEvent()){
             UsageEvents.Event event = new UsageEvents.Event();
             usageEvents.getNextEvent(event);
-            String packagename= event.getPackageName();
-            if(userAppPackageMap1.containsKey(packagename) ){
-                if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) { //increment the counter for that package
-                    if(accessCountOfApps.containsKey(packagename)){
-                        long temp = accessCountOfApps.get(packagename);
-                        accessCountOfApps.put(packagename, temp+1);
-                    }
-                    else{
-                        accessCountOfApps.put(packagename, Long.valueOf(1));
-                    }
+            if(event.getEventType()==UsageEvents.Event.MOVE_TO_FOREGROUND ){
+                if (event.getPackageName().equals("com.instagram.android") && event.getClassName().toString().equals("com.instagram.mainactivity.LauncherActivity")) {
+                    instaCount++;
+                }
+                if(event.getPackageName().equals("com.whatsapp") && event.getClassName().toString().equals("com.whatsapp.Main")){
+//                    System.out.println("Package: " + event.getPackageName() + " Event type: " + event.getEventType() + " -- " + event.getClassName() );
+                    whatsappCount++;
+                }
+                if(event.getPackageName().equals("com.facebook.katana") && event.getClassName().toString().equals("com.facebook.katana.activity.FbMainTabActivity") ){
+                    //System.out.println("Package: " + event.getPackageName() + " Event type: " + event.getEventType() + " -- " + event.getClassName() );
+                    facebookCount++;
+                }
+                if(event.getPackageName().equals("com.twitter.android") && event.getClassName().toString().equals("com.twitter.app.main.MainActivity")){
+                    twitterCount++;
+                }
+
+                if(event.getPackageName().equals("com.snapchat.android") && event.getClassName().toString().equals("com.snap.mushroom.MainActivity")){
+                    snapchatCount++;
+                }
+
+                if(event.getPackageName().equals("com.linkedin.android") && event.getClassName().toString().equals("com.linkedin.android.authenticator.LaunchActivity")){
+//                    System.out.println("Package: " + event.getPackageName() + " Event type: " + event.getEventType() + " -- " + event.getClassName()+" time "+formatMillisecondsToTime(event.getTimeStamp()) );
+                    linkedinCount++;
+                }
+
+                if(event.getPackageName().equals("com.google.android.youtube") && event.getClassName().toString().equals("com.google.android.apps.youtube.app.watchwhile.WatchWhileActivity")){
+//                    System.out.println("Package: " + event.getPackageName() + " Event type: " + event.getEventType() + " -- " + event.getClassName()+" time "+formatMillisecondsToTime(event.getTimeStamp())  );
+                    youtubeCount++;
                 }
             }
         }
+        System.out.println("\n\nwhatsapp: "+whatsappCount);
+        accessCountOfApps.put("com.whatsapp",whatsappCount);
+        accessCountOfApps.put("com.instagram.android",instaCount);
+        accessCountOfApps.put("com.facebook.katana",facebookCount);
+        accessCountOfApps.put("com.twitter.android",twitterCount);
+        accessCountOfApps.put("com.snapchat.android",snapchatCount);
+        accessCountOfApps.put("com.linkedin.android",linkedinCount);
+        accessCountOfApps.put("com.google.android.youtube",youtubeCount);
+
+// Commenting out this code just in case i need similar in future
+//        while (usageEvents.hasNextEvent()) {
+//            UsageEvents.Event event = new UsageEvents.Event();
+//            usageEvents.getNextEvent(event);
+//            String packagename= event.getPackageName();
+//            if(userAppPackageMap1.containsKey(packagename) ){
+//                if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) { //increment the counter for that package
+//                    String currentForegroundApp = event.getPackageName();
+//                    if (!TextUtils.isEmpty(currentForegroundApp) && currentForegroundApp.equals(packagename)) {
+//                        // Check if the current foreground app is the target app
+//                        if (lastForegroundApp == null || !lastForegroundApp.equals(currentForegroundApp)) {
+//                            // This is the first event for the target app in the current session
+//                            if (accessCountOfApps.containsKey(packagename)) {
+//                                long temp = accessCountOfApps.get(packagename);
+//                                accessCountOfApps.put(packagename, temp + 1);
+////                              System.out.println(packagename+temp+1+" time== "+formatDuration(event.getTimeStamp()));
+//                            } else {
+//                                accessCountOfApps.put(packagename, Long.valueOf(1));
+//                            }
+//                            lastForegroundApp = currentForegroundApp;
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return accessCountOfApps;
     }
     private Map<String , Long> calculateTodaysUsageTime( ) {
@@ -146,31 +211,25 @@ public class AppUsageStatistics {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         long endTime = System.currentTimeMillis();
-//        System.out.println("Current Time is "+ calendar.getTime());
         calendar.set(Calendar.HOUR_OF_DAY,0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND,0);
-//        System.out.println("Start of the day is "+ calendar.getTime());
         long startTime = calendar.getTimeInMillis();
-        long duration=endTime-startTime;
-//        System.out.println("Time in mili in  a day"+ duration);
-//        startTime = endTime - (24 * 60 * 60 * 1000); // 24 hours ago
         List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, startTime, endTime);
 
         for (UsageStats usageStats : usageStatsList) {
             String packageName = usageStats.getPackageName();
+            long timefr=usageStats.getTotalTimeInForeground();
+            System.out.println(usageStats.getPackageName()+" "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" "+ formatDuration(timefr) + " "+timefr);
+//            if(packageName.equals("com.google.android.youtube")){
+//                System.out.println("Last "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" timeFR "+ formatDuration(timefr) + "--"+timefr);
+//            }
+//            if(packageName.equals("com.whatsapp")){
+//                System.out.println("Last "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" timeFR "+ formatDuration(timefr) + "--"+timefr);
+//            }
             if (userAppPackageMap1.containsKey(packageName) ) {
-//                System.out.println(usageStats.getPackageName()+"  Time  "+usageStats.getTotalTimeInForeground());
-                long todaysUsageTimeMillis = 0;
-                todaysUsageTimeMillis+=usageStats.getTotalTimeInForeground();
-                if(usageTimeOfApps.containsKey(packageName)){
-                    todaysUsageTimeMillis+=usageTimeOfApps.get(packageName);
-                    usageTimeOfApps.put(packageName,todaysUsageTimeMillis);
-                }
-                else {
-                    usageTimeOfApps.put(packageName,todaysUsageTimeMillis);
-                }
+                usageTimeOfApps.put(packageName,usageStats.getTotalTimeInForeground());
             }
         }
         return usageTimeOfApps;
@@ -192,6 +251,15 @@ public class AppUsageStatistics {
             return userAppPackageMap.get(packageName);
         }
         return "";
+    }
+    public static String formatDuration(long milliseconds) {
+//        milliseconds = System.currentTimeMillis()-milliseconds;
+        long seconds = (milliseconds / 1000) % 60;
+        long minutes = (milliseconds / (1000 * 60)) % 60;
+        long hours = (milliseconds / (1000 * 60 * 60));
+        // Format the duration as "hh:mm:ss"
+        String formattedTime = String.format("%02dH:%02dM:%02dS", hours, minutes, seconds);
+        return formattedTime;
     }
 
 }

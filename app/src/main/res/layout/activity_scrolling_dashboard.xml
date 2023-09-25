@@ -32,24 +32,12 @@
                 app:popupTheme="@style/Theme.Intentor.PopupOverlay" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_scrolling"    />
 
-<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--        android:id="@+id/fab"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginEnd="@dimen/fab_margin"-->
-<!--        app:layout_anchor="@id/app_bar"-->
-<!--        app:layout_anchorGravity="bottom|end"-->
-<!--        app:srcCompat="@android:drawable/ic_dialog_email" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/appUsageTextView"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="App Usage Statistics"-->
-<!--        android:textSize="18sp" />-->
+    <include layout="@layout/footer_layout" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

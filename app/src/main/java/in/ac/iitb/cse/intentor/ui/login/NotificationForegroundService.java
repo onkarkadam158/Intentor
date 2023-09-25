@@ -1,15 +1,20 @@
 package in.ac.iitb.cse.intentor.ui.login;
 
+import static in.ac.iitb.cse.intentor.ui.login.LoginActivity.PERMISSION_REQUEST_CODE;
+
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -18,52 +23,58 @@ import in.ac.iitb.cse.intentor.dashboard.DashboardScrollingActivity;
 
 public class NotificationForegroundService extends Service {
 
+    private static final int NOTIFICATION_ID = 1;
+    private static final String CHANNEL_ID = "sticky_notification_channel_id";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        System.out.println("inside notification foreground");
+        startForeground(NOTIFICATION_ID, createNotification());
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    @Nullable
     @Override
-    public ComponentName startForegroundService(Intent service) {
-        createNotificationMethod();
-        return null;
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        System.out.println("inside notification foreground");
+        startForeground(NOTIFICATION_ID, createNotification());
+        return START_STICKY;
     }
 
-    public void createNotificationMethod() {
+    private Notification createNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create a notification channel (required for Android 8.0 and higher)
             NotificationChannel channel = new NotificationChannel(
-                    "notif0",
-                    "My Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    CHANNEL_ID,
+                    "Sticky Notification Channel",
+                    NotificationManager.IMPORTANCE_HIGH
             );
 
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "my_channel_id")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Intentor")
-                .setContentText("Your Todays usage: 00H:00M")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setContentTitle("Sticky Notification")
+                .setContentText("This is a sticky notification")
+                .setOngoing(true); // Set the notification as ongoing (sticky)
 
-        // Add actions, if needed
-        // builder.addAction(R.drawable.ic_action, "Action Name", pendingIntent);
+
         Notification notification = builder.build();
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        int notificationId = 1; // A unique ID for the notification
-        startForeground(notificationId, notification);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it from the user.
+//            ActivityCompat.requestPermissions(, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
 
-        Intent intent = new Intent(this, DashboardScrollingActivity.class);
-
-        // Create a back stack for the intent (optional)
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(LoginActivity.this);
-//        stackBuilder.addNextIntentWithParentStack(intent);
-//        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        // Set the pendingIntent as the notification's click action
-//        builder.setContentIntent(pendingIntent);
+        }
+        notificationManager.notify(NOTIFICATION_ID, notification);
+        return builder.build();
     }
 }

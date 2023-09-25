@@ -44,7 +44,7 @@ public class OverlayService extends Service {
     Map<String, String> targetAppPackageNames = new HashMap<>();
     public Button button1,button2,button3;
 
-    private SharedPreferences mutedApps,mutedAppsWithTime,exitedApps,remindMelaterTimes ;
+    private SharedPreferences mutedApps,mutedAppsWithTime,exitedApps,remindMelaterTimes, appopens ;
 
     TextView countdownTextView, closePromptMessage;
 
@@ -102,6 +102,7 @@ public class OverlayService extends Service {
         mutedAppsWithTime = getSharedPreferences("appsWhoseInterventionMutedForTheDayWithAccurateTime", Context.MODE_PRIVATE);
         exitedApps = getSharedPreferences("appsWhoseExitedWithTheirTimes",Context.MODE_PRIVATE);
         remindMelaterTimes = getSharedPreferences("remindMeAfter10MinutesClick",Context.MODE_PRIVATE);
+        appopens = getSharedPreferences("NumberOfTimesTheAppIsOpened",Context.MODE_PRIVATE);
 
     }
 
@@ -158,7 +159,7 @@ public class OverlayService extends Service {
 
         // Query for usage statistics
         UsageEvents.Event event = new UsageEvents.Event();
-        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 2000, currentTime); // Query for the last 10 seconds
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 1000, currentTime); // Query for the last 1 seconds
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
