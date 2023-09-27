@@ -134,7 +134,7 @@ public class AppUsageStatistics {
         UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, currentTime);
         usageStatsManager.queryAndAggregateUsageStats(startTime,currentTime);
         String lastForegroundApp = null;
-        System.out.println("Printing all the usage stats events\n\n");
+//        System.out.println("Printing all the usage stats events\n\n");
         long whatsappCount=0,instaCount=0,linkedinCount=0,snapchatCount=0,facebookCount=0,youtubeCount=0,twitterCount=0;
         while(usageEvents.hasNextEvent()){
             UsageEvents.Event event = new UsageEvents.Event();
@@ -170,7 +170,7 @@ public class AppUsageStatistics {
                 }
             }
         }
-        System.out.println("\n\nwhatsapp: "+whatsappCount);
+//        System.out.println("\n\nwhatsapp: "+whatsappCount);
         accessCountOfApps.put("com.whatsapp",whatsappCount);
         accessCountOfApps.put("com.instagram.android",instaCount);
         accessCountOfApps.put("com.facebook.katana",facebookCount);
@@ -216,22 +216,84 @@ public class AppUsageStatistics {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND,0);
         long startTime = calendar.getTimeInMillis();
-        List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, startTime, endTime);
+        usageTimeOfApps.put("com.whatsapp",0L);
+        usageTimeOfApps.put("com.instagram.android",0L);
+        usageTimeOfApps.put("com.facebook.katana",0L);
+        usageTimeOfApps.put("com.twitter.android",0L);
+        usageTimeOfApps.put("com.snapchat.android",0L);
+        usageTimeOfApps.put("com.linkedin.android",0L);
+        usageTimeOfApps.put("com.google.android.youtube",0L);
 
-        for (UsageStats usageStats : usageStatsList) {
-            String packageName = usageStats.getPackageName();
-            long timefr=usageStats.getTotalTimeInForeground();
-            System.out.println(usageStats.getPackageName()+" "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" "+ formatDuration(timefr) + " "+timefr);
+        Map<String , Long> prev = new HashMap<>();
+        prev.put("com.whatsapp", -1L);
+        prev.put("com.instagram.android",  -1L);
+        prev.put("com.facebook.katana", -1L);
+        prev.put("com.twitter.android",  -1L);
+        prev.put("com.snapchat.android",  -1L);
+        prev.put("com.linkedin.android",  -1L);
+        prev.put("com.google.android.youtube",  -1L);
+
+        UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
+        usageStatsManager.queryAndAggregateUsageStats(startTime, endTime);
+        while (usageEvents.hasNextEvent()) {
+            UsageEvents.Event event = new UsageEvents.Event();
+            usageEvents.getNextEvent(event);
+            String currPackageName=event.getPackageName();
+            if (usageTimeOfApps.containsKey(currPackageName)) {
+                if (event.getEventType() == 1) {
+                    prev.put(currPackageName, event.getTimeStamp());
+                } else if (event.getEventType() == 2 && prev.containsKey(currPackageName) && prev.get(currPackageName) != -1) {
+                    Long time = usageTimeOfApps.get(currPackageName) + (event.getTimeStamp() - prev.get(currPackageName));
+                    usageTimeOfApps.put(currPackageName, time);
+                }
+            }
+        }
+
+//        for (Map.Entry<String, Long> entry : usageTimeOfApps.entrySet()) {
+//            UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
+//            usageStatsManager.queryAndAggregateUsageStats(startTime, endTime);
+//            long calcTime = 0, prev = -1;
+//            String packageName1 = entry.getKey() ;
+//            while (usageEvents.hasNextEvent()) {
+//                UsageEvents.Event event = new UsageEvents.Event();
+//                usageEvents.getNextEvent(event);
+//                if (event.getPackageName().equals(packageName1)) {
+//                    if (event.getEventType() == 1) {
+////                System.out.println(packageName);
+////                System.out.println(event.getClassName());
+////                System.out.println("Etype: "+ event.getEventType()+" Time "+ formatMillisecondsToTime(event.getTimeStamp()));
+////                usageTimeOfApps.put(packageName,usageStats.getTotalTimeInForeground());
+//                        prev = event.getTimeStamp();
+//                    } else if (event.getEventType() == 2 && prev != -1) {
+//                        calcTime += (event.getTimeStamp() - prev);
+//                    }
+//                }
+//            }
+//            System.out.println(packageName1+"  Calc time  "+ formatDuration(calcTime) +"   "+ calcTime);
+//            usageTimeOfApps.put(packageName1,calcTime);
+//        }
+
+        // This code gives wrong results. aActually it calculates all the time that the package has been to foreground background. Calculates extra time because it overlaps.
+//        List<UsageStats> usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
+//        for (UsageStats usageStats : usageStatsList) {
+//            String packageName = usageStats.getPackageName();
+//            long timefr=usageStats.getTotalTimeInForeground();
+//            long timevis=usageStats.getTotalTimeVisible();
+//            long timeforeserv=usageStats.getTotalTimeForegroundServiceUsed();
 //            if(packageName.equals("com.google.android.youtube")){
 //                System.out.println("Last "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" timeFR "+ formatDuration(timefr) + "--"+timefr);
 //            }
 //            if(packageName.equals("com.whatsapp")){
 //                System.out.println("Last "+formatMillisecondsToTime(usageStats.getLastTimeUsed())+" timeFR "+ formatDuration(timefr) + "--"+timefr);
 //            }
-            if (userAppPackageMap1.containsKey(packageName) ) {
-                usageTimeOfApps.put(packageName,usageStats.getTotalTimeInForeground());
-            }
-        }
+//            if (userAppPackageMap1.containsKey(packageName) ) {
+//                System.out.println(usageStats.getPackageName()+" Time: "+ formatDuration(timefr));
+//                System.out.println(usageStats.getPackageName()+" TimeVisible: "+ formatDuration(timevis));
+//                System.out.println(usageStats.getPackageName()+" TimeForeService: "+ formatDuration(timeforeserv));
+////                usageTimeOfApps.put(packageName,timefr);
+//            }
+//        }
+
         return usageTimeOfApps;
     }
 

@@ -106,7 +106,7 @@ public class AppLaunchMonitorService extends Service {
 
     public String monitorForegroundApp() {
 
-        System.out.println("Inside monitor fore app");
+//        System.out.println("Inside monitor fore app");
         if (!Context.USAGE_STATS_SERVICE.isEmpty()) {
             usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         }

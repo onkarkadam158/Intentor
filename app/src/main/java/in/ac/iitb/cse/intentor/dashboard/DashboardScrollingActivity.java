@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.animation.Easing;
@@ -46,6 +48,9 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         CollapsingToolbarLayout toolBarLayout = binding.toolbarLayout;
 
         setContentView(R.layout.activity_scrolling_dashboard);
+        LinearLayout LinearLayout = findViewById(R.id.content_scolling_view); // Replace with your layout's ID
+        LinearLayout.setBackgroundColor(getResources().getColor(R.color.white)); // Replace R.color.your_color with your color resource
+
         BarChart barChartOfUsageTime = findViewById(R.id.barChartOfUsageTime);
         BarChart barChartOfVisitCount = findViewById(R.id.barChartOfVisitCount);
 

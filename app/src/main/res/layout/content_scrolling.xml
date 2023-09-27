@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".dashboard.DashboardScrollingActivity"
     tools:showIn="@layout/activity_scrolling_dashboard">
 
 
     <LinearLayout
+        android:id="@+id/content_scolling_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
