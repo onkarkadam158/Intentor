@@ -7,6 +7,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
@@ -71,6 +72,9 @@ public class AppUsageStatistics {
         Map<String , Long> usageTimeOfApps = new HashMap<>();
         usageTimeOfApps = calculateTodaysUsageTime();
 
+        long phoneUnlockCounts=0,phoneUsageTime=0;
+        phoneUnlockCounts = calculatePhoneUnlockCountsOfToday();
+        phoneUsageTime = calculatePhoneUsageOfToday();
         for (Map.Entry<String, Boolean> entry : userAppPackageMap1.entrySet()) {
             String packageName = entry.getKey();
 
@@ -86,6 +90,8 @@ public class AppUsageStatistics {
                 long count = accessCountOfApps.get(packageName);
                 appUsageInfo.setTotalVisitCountsOfToday(count);
             }
+            appUsageInfo.setTotalPhoneUnlockCountOfToday(phoneUnlockCounts);
+            appUsageInfo.setTotalPhoneUsageTimeOfToday(phoneUsageTime);
             appUsageInfoList.add(appUsageInfo);
         }
 
@@ -297,6 +303,73 @@ public class AppUsageStatistics {
         return usageTimeOfApps;
     }
 
+    public long calculatePhoneUnlockCountsOfToday(){
+        long phoneUnlockCount=0;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        long endTime = System.currentTimeMillis();
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND,0);
+        long startTime = calendar.getTimeInMillis();
+
+        UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
+        while (usageEvents.hasNextEvent()) {
+            UsageEvents.Event event = new UsageEvents.Event();
+            usageEvents.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.KEYGUARD_SHOWN) {
+                    phoneUnlockCount++;
+            }
+        }
+        System.out.println("Phone Unlock Count"+phoneUnlockCount);
+        return phoneUnlockCount;
+    }
+    public long calculatePhoneUsageOfToday(){
+        long phoneUsageTimeOfToday=0;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        long endTime = System.currentTimeMillis();
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND,0);
+        long startTime = calendar.getTimeInMillis();
+        long prev=-1;
+        UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
+        usageStatsManager.queryAndAggregateUsageStats(startTime, endTime);
+//        Map<String, Boolean> userAppsPackages = getUserAppsPackages(context.getApplicationContext());
+        while (usageEvents.hasNextEvent()) {
+            UsageEvents.Event event = new UsageEvents.Event();
+            usageEvents.getNextEvent(event);
+            String currPackageName=event.getPackageName();
+//            currPackageName.equals("com.android.launcher") userAppsPackages.containsKey(currPackageName)
+            if (!currPackageName.equals("com.android.launcher")) {
+//                System.out.println("Package: "+currPackageName+" Event; "+ event.getEventType()+ " Class: "+ event.getClassName() + " time "+ formatMillisecondsToTime(event.getTimeStamp()));
+                if (event.getEventType() == 1) {
+                    prev = event.getTimeStamp();
+                }
+                else if (event.getEventType() == 2 && prev != -1) {
+                    phoneUsageTimeOfToday = phoneUsageTimeOfToday + (event.getTimeStamp() - prev);
+                }
+            }
+        }
+        System.out.println("Phone usage time"+formatDuration(phoneUsageTimeOfToday) + "  "+formatMillisecondsToTime(phoneUsageTimeOfToday));
+        return phoneUsageTimeOfToday;
+    }
+    public static Map<String, Boolean> getUserAppsPackages(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        Map<String, Boolean> userAppsMap = new HashMap<>();
+
+        List<ApplicationInfo> installedPackages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+        for (ApplicationInfo packageInfo : installedPackages) {
+            // Check if the package is not a system app
+            if (((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0 && (packageInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) ==0 )) {
+                userAppsMap.put(packageInfo.packageName, true);
+            }
+        }
+        return userAppsMap;
+    }
     private String getAppNameFromPackageName(String packageName) {
         // Implemented a method to retrieve the app name based on the package name.
         // You can use PackageManager or other methods to do this.

@@ -62,14 +62,10 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         StringBuilder stringBuilder = new StringBuilder();
         for (AppUsageInfo appUsageInfo : appUsageInfoList) {
             String appName = appUsageInfo.getPackageName();
-            long totalUsageTime = appUsageInfo.getTotalUsageTime();
             long todaysTotalUsageTime = appUsageInfo.getTotalUsageTimeOfToday();
-//            long totalAppVisits = appUsageInfo.getTotalVisitCounts();
             long todaysAppVisits = appUsageInfo.getTotalVisitCountsOfToday();
             stringBuilder.append("App: ").append(appName).append("\n");
-            stringBuilder.append("Total Time: ").append(formatTime(totalUsageTime)).append("\n");
             stringBuilder.append("Todays Time: ").append(formatTime(todaysTotalUsageTime)).append("\n");
-//            stringBuilder.append("Total App visits: ").append(totalAppVisits).append("\n");
             stringBuilder.append("Todays App visits: ").append(todaysAppVisits).append("\n\n");
         }
 //        appUsageTextView.setText(stringBuilder.toString());

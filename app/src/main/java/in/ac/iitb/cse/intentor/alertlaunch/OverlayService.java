@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import in.ac.iitb.cse.intentor.R;
+import in.ac.iitb.cse.intentor.dashboard.AppUsageInfo;
+import in.ac.iitb.cse.intentor.dashboard.AppUsageStatistics;
 
 public class OverlayService extends Service {
 
@@ -69,9 +71,10 @@ public class OverlayService extends Service {
         closeAppMessageView = LayoutInflater.from(this).inflate(R.layout.close_app_prompt_layout,null);
         timerView = LayoutInflater.from(this).inflate(R.layout.timer_countdown_after_wait_button_clicked,null);
 
+        AppUsageStatistics appUsageStatistics = new AppUsageStatistics(this);
         // Set up the text view
         TextView statisticsTextView = overlayView.findViewById(R.id.statisticsTextView);
-        statisticsTextView.setText("Todays usage time \n" + getTime() + getUnlockCount() + "\n");
+        statisticsTextView.setText("Todays phone usage time: "+formatDuration(appUsageStatistics.calculatePhoneUsageOfToday())+ "\nTodays Phone unlock Count: "+appUsageStatistics.calculatePhoneUnlockCountsOfToday());
 
         closePromptMessage = closeAppMessageView.findViewById(R.id.message_prompt_to_close_app);
         closePromptMessage.setText("\n\nGreat to see you controlling your Usage.\n Press home or back button to exit the app.\n\n");
@@ -128,14 +131,14 @@ public class OverlayService extends Service {
         button1.setText("\uD83D\uDE0A  Exit the " + appName + " Now");
 
         String temp = mutedApps.getAll().toString();
-        System.out.println(temp+"\ninside on start of overlay MutedApp");
+        System.out.println("\nMutedApps\n"+temp+"\n");
         String temp1=mutedAppsWithTime.getAll().toString();
-        System.out.println(temp1+"\ninside on start of overlay MutedAppwith time");
-        System.out.println(exitedApps.getAll().toString()+"  \nExited apps list with time");
-        System.out.println(remindMelaterTimes.getAll().toString()+"  \nRemind me later");
+        System.out.println("\nMutedApp with time\n"+temp1+"\n");
+        System.out.println("\nExited apps list with time\n"+exitedApps.getAll().toString()+"\n");
+        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
 
         if(!isappMutedForTheDay(packageName)){
-            System.out.println(temp+"app is not muted");
+//            System.out.println(temp+"app is not muted");
             if (isforeground(packageName)) {
                 showTheOverlay(packageName);
             } else {
@@ -513,32 +516,6 @@ public class OverlayService extends Service {
         }
     }
 
-    private String getTime() {
-        UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-
-        long startTime = calendar.getTimeInMillis(); // Start of the day
-        long endTime = System.currentTimeMillis(); // Current time
-
-        List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
-        long totalUsageTime = 0;
-        for (UsageStats stat : stats) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                totalUsageTime += stat.getTotalTimeVisible();
-            }
-        }
-        return formatDuration(totalUsageTime);
-    }
-
-    private String getUnlockCount() {
-        return "";
-    }
 
     public static String formatDuration(long milliseconds) {
         long seconds = (milliseconds / 1000) % 60;
