@@ -46,7 +46,6 @@ public class AppLaunchMonitorService extends Service {
     public Timer timer;
     public List<UsageStats> usageStatsList;
     public long currentTime;
-
 //          onCreate(): This method is called when the service is first created.
 //        It's where you can perform one-time setup tasks for your service.
 //        You might initialize resources, create threads, or set up other necessary components here.
@@ -85,7 +84,7 @@ public class AppLaunchMonitorService extends Service {
                     String eventOccurred = "false";
                     Intent overlayIntent = new Intent(getApplicationContext(), OverlayService.class);
                     eventOccurred = monitorForegroundApp();
-
+                    isforeground();
                     if (!eventOccurred.equals("false")) {
 
                         overlayIntent.putExtra("packageName", eventOccurred);
@@ -103,7 +102,31 @@ public class AppLaunchMonitorService extends Service {
         return START_STICKY;// This  makes the service restart if it's killed.
     }
 
+    private String isforeground() {
+        UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        long currentTime = System.currentTimeMillis();
 
+        // Query for usage statistics
+        UsageEvents.Event event = new UsageEvents.Event();
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 1000, currentTime); // Query for the last 1 seconds
+
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND
+                    || event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
+                    || event.getEventType() == UsageEvents.Event.USER_INTERACTION
+                    || event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                String foregroundAppPackageName = event.getPackageName();
+                System.out.println("Package: "+foregroundAppPackageName+" Class: "+event.getClassName()+" time: "+event.getTimeStamp());
+                // Check if the foreground app's package name matches the one you're interested in
+                if (targetAppPackageNames.containsKey(foregroundAppPackageName)) {
+                    // The target app is in the foreground and visible to the user
+                    return foregroundAppPackageName;
+                }
+            }
+        }
+        return "false";
+    }
     public String monitorForegroundApp() {
 
 //        System.out.println("Inside monitor fore app");
@@ -119,9 +142,8 @@ public class AppLaunchMonitorService extends Service {
                 String packagename = usageStats.getPackageName();
 
                 if (usageStats.getLastTimeUsed() >= (currentTime - 1000)) {
-
+                    System.out.println("package: "+usageStats.getPackageName());
                     if (targetAppPackageNames.containsKey(packagename)) {
-
                         return packagename;
                     }
                 }

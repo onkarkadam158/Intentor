@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Vector;
 
 public class AppUsageStatistics {
 
@@ -214,6 +215,7 @@ public class AppUsageStatistics {
     }
     private Map<String , Long> calculateTodaysUsageTime( ) {
         Map<String , Long> usageTimeOfApps = new HashMap<>();// return variable containing the usage time of our interested apps
+       Map<String, Map<String, String>> usageSessionsWithTimestampOfApps = new HashMap<>(); //{app:{time:duration}}-->>{"Instagram":{"8am": "5M2S", "10am":"3M2S"}, "Whatsapp":{"3am": "3M", "11am":"4M40S"}... }
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         long endTime = System.currentTimeMillis();
@@ -249,12 +251,25 @@ public class AppUsageStatistics {
                 if (event.getEventType() == 1) {
                     prev.put(currPackageName, event.getTimeStamp());
                 } else if (event.getEventType() == 2 && prev.containsKey(currPackageName) && prev.get(currPackageName) != -1) {
-                    Long time = usageTimeOfApps.get(currPackageName) + (event.getTimeStamp() - prev.get(currPackageName));
+                    long sessionStartTime = prev.get(currPackageName);
+                    long sessionEndTime = event.getTimeStamp();
+                    Long time = usageTimeOfApps.get(currPackageName) + sessionEndTime-sessionStartTime;
                     usageTimeOfApps.put(currPackageName, time);
+                    //this checks is there is an app package name already in usageSessionsWithTimestampOfApps if not adds a hashmap (if not done so, throws object error)
+                    if(!usageSessionsWithTimestampOfApps.containsKey(currPackageName)){
+                        usageSessionsWithTimestampOfApps.put(currPackageName,new HashMap<>());
+                    }
+                    // Retrieve the inner map for the app
+                    Map<String,String>innerMap=usageSessionsWithTimestampOfApps.get(currPackageName);
+                    // Check if the inner map contains the timestamp key
+                    if(!innerMap.containsKey(currPackageName)){
+                        // Add the new timestamp to the inner map
+                        innerMap.put(formatMillisecondsToTime(sessionStartTime),formatDuration(sessionEndTime-sessionStartTime));
+                    }
+//                    usageSessionsWithTimestampOfApps.get(currPackageName).put(formatMillisecondsToTime(sessionStartTime), formatDuration(sessionEndTime-sessionStartTime));
                 }
             }
         }
-
 //        for (Map.Entry<String, Long> entry : usageTimeOfApps.entrySet()) {
 //            UsageEvents usageEvents = usageStatsManager.queryEvents(startTime, endTime);
 //            usageStatsManager.queryAndAggregateUsageStats(startTime, endTime);
@@ -299,6 +314,26 @@ public class AppUsageStatistics {
 ////                usageTimeOfApps.put(packageName,timefr);
 //            }
 //        }
+        // Iterate over the nested Map usageSessionsWithTimestampOfApps map
+        System.out.println("Printing the usage sessions");
+        for (Map.Entry<String, Map<String, String>> entry : usageSessionsWithTimestampOfApps.entrySet()) {
+            String appName = entry.getKey();
+            Map<String, String> timestamps = entry.getValue();
+            System.out.println("App Name: " + appName+" \n");
+            // Iterate over the inner Map
+            for (Map.Entry<String, String> timestampEntry : timestamps.entrySet()) {
+                String timestampKey = timestampEntry.getKey();
+                String timestampValue = timestampEntry.getValue();
+                System.out.println("Timestamp Key: " + timestampKey + ", Timestamp Value: " + timestampValue+" \n");
+            }
+        }
+//        OUTPUT: Printing the usage sessions
+//        App Name: com.google.android.youtube
+//        Timestamp Key: 10:33:38, Timestamp Value: 00H:00M:12S
+//        Timestamp Key: 10:48:18, Timestamp Value: 00H:00M:20S
+//        App Name: com.whatsapp
+//        Timestamp Key: 09:43:39, Timestamp Value: 00H:00M:02S
+//        Timestamp Key: 09:43:41, Timestamp Value: 00H:00M:12S
 
         return usageTimeOfApps;
     }

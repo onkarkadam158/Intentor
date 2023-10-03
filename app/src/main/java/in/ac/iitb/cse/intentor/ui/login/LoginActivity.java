@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -51,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final int PERMISSION_REQUEST_CODE = 1;
     private ActivityLoginBinding binding;
     private static final long LONG_PRESS_DURATION = 4000; // 4 seconds
-
+    private SharedPreferences loginDetails;
     private static final String SERVER_URL = "http://10.129.131.206:8000/login/check_registration_code";
 
 
@@ -61,12 +62,15 @@ public class LoginActivity extends AppCompatActivity {
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         //notification method
         // Issue the notification
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
         }
+//        loginDetails = getSharedPreferences("LoginDetailsOfUsers",Context.MODE_PRIVATE);
+//        if(loginDetails!=null && loginDetails.contains("RegistrationID")){
+//            updateUiWithUser();
+//        }
         Intent serviceIntent1 = new Intent(getApplicationContext(), NotificationForegroundService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent1);
@@ -100,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 updateUiWithUser();
                 if (!isValidID(usernameEditText.getText().toString())) {
-                    Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!hasUsageStatsPermission()) {
@@ -114,7 +118,7 @@ public class LoginActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        // Perform your network operation here
+                        // Perform  network operation here
                         try {
                             System.out.println("First");
                             ApiService apiService = new ApiService();
@@ -129,6 +133,9 @@ public class LoginActivity extends AppCompatActivity {
                             if (response != null) {
                                 if (response.contains("status") && response.contains("success")) {
                                     // Perform operations for successful status
+                                    SharedPreferences.Editor editor = loginDetails.edit();
+                                    editor.putString("RegistrationID",entered_response_code);
+                                    editor.apply();
                                     updateUiWithUser();
                                 } else {
                                     Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();

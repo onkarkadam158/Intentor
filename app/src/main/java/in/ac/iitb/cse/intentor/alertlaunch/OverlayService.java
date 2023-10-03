@@ -55,7 +55,6 @@ public class OverlayService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        System.out.println("inside overlay start");
         targetAppPackageNames.put("com.instagram.android", "Instagram"); // Instagram
         targetAppPackageNames.put("com.facebook.katana", "Facebook"); // Facebook
         targetAppPackageNames.put("com.twitter.android", "Twitter"); // Twitter
@@ -98,6 +97,7 @@ public class OverlayService extends Service {
         windowManager.addView(overlayView, layoutParams);
         windowManager.addView(closeAppMessageView,layoutParams);
         windowManager.addView(timerView, layoutParams);
+        overlayView.setVisibility(View.GONE);
         closeAppMessageView.setVisibility(View.GONE);
         timerView.setVisibility(View.GONE);
         // creating/accessing SharedPreferences
@@ -133,15 +133,18 @@ public class OverlayService extends Service {
         String temp = mutedApps.getAll().toString();
         System.out.println("\nMutedApps\n"+temp+"\n");
         String temp1=mutedAppsWithTime.getAll().toString();
-        System.out.println("\nMutedApp with time\n"+temp1+"\n");
-        System.out.println("\nExited apps list with time\n"+exitedApps.getAll().toString()+"\n");
-        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
+//        System.out.println("\nMutedApp with time\n"+temp1+"\n");
+//        System.out.println("\nExited apps list with time\n"+exitedApps.getAll().toString()+"\n");
+//        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
 
         if(!isappMutedForTheDay(packageName)){
 //            System.out.println(temp+"app is not muted");
             if (isforeground(packageName)) {
-                showTheOverlay(packageName);
-            } else {
+                if(!isAnyOverlayVisible()) {
+                    showTheOverlay(packageName);
+                }
+            }
+            else {
                 closeButton1ClickedPrompt();
                 closeButton2ClickedPrompt();
                 hideTheOverlay();
@@ -155,7 +158,9 @@ public class OverlayService extends Service {
         return START_STICKY;
     }
 
-
+    public boolean isAnyOverlayVisible(){
+        return overlayView.getVisibility()==View.VISIBLE || timerView.getVisibility()==View.VISIBLE || closeAppMessageView.getVisibility()==View.VISIBLE ;
+    }
     private boolean isforeground(String packageName) {
         UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         long currentTime = System.currentTimeMillis();
@@ -191,7 +196,7 @@ public class OverlayService extends Service {
                 System.out.println("Button1 clicked");
                 addActionToSharedprefOfButton1(packageName);
                 hideTheOverlay();
-                // TODO: seems like we can't forcefully close other apps we can prompt users (after clicking this button) to exit the app by either clicking the home button
+                //seems like we can't forcefully close other apps we can prompt users (after clicking this button) to exit the app by either clicking the home button
 //                 or by clicking the back button
                 openButton1ClickedPrompt();
                 closeCurrentOpenedApp(packageName);
@@ -222,7 +227,7 @@ public class OverlayService extends Service {
             }
         });
     }
-    //########################################################## START OF For 1st button exit the app respect inteventions ################
+    //########################################################## START OF For 1st button exit the app respect interventions ################
     public  void closeCurrentOpenedApp(String packageName){
         // Get the ActivityManager
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -303,9 +308,9 @@ public class OverlayService extends Service {
         editor.apply();
     }
 
-    //########################################################## END of For 1st button exit the app respect inteventions ################
+    //########################################################## END of For 1st button exit the app respect interventions ################
 
-    //########################################################## START OF For 2nd button wait for some time  inteventions ################
+    //########################################################## START OF For 2nd button wait for some time  interventions ################
 
     public void addActionToSharedprefOfButton2(String packageName){
         String dayTime=getTodaysDateFormattedWithTime();
@@ -329,13 +334,13 @@ public class OverlayService extends Service {
                 long seconds = (millisUntilFinished / 1000) % 60;
                 countdownTextView.setText(String.format("%02d:%02d", minutes, seconds));
                 // Change background color based on remaining time
-                if (millisUntilFinished <= 8 * 60 * 1000) { // 2 minutes remaining
+                if (millisUntilFinished <= 9 * 60 * 1000 ) { // 2 minutes remaining
                     countdownTextView.setBackground(getDrawable(R.drawable.redbutton));
-                } else if (millisUntilFinished <= 9 * 60 * 1000) { // 5 minutes remaining
+                } else if (millisUntilFinished <= 9 * 60 * 1000 + 30*1000) { // 5 minutes remaining
                     countdownTextView.setBackground(getDrawable(R.drawable.yellowbutton));
                 }
                 //small vibrations at the end of time
-                if(millisUntilFinished<= 8*60*1000){
+                if(millisUntilFinished<= 9*60*1000){
                     if (vibrator != null && seconds%5==0) {
                         // Vibrate for 500 milliseconds (for every 5 seconds interval)
                         vibrator.vibrate(500);
@@ -424,8 +429,8 @@ public class OverlayService extends Service {
         return timerView.getVisibility() == timerView.VISIBLE;
     }
 
-    //########################################################## END OF For 2nd button wait for some time  inteventions ################
-    //########################################################## For 3rd button mute the inteventions for the rest of the day ################
+    //########################################################## END OF For 2nd button wait for some time  interventions ################
+    //########################################################## For 3rd button mute the interventions for the rest of the day ################
     public void addActionToSharedprefOfButton3(String packageName){
         String formattedDate = getTodaysDateFormatted();
         if(isDatePresent(formattedDate)){
@@ -463,7 +468,7 @@ public class OverlayService extends Service {
         editor.putString(date, str);
         editor.apply();
     }
-//    ############################ end of For 3rd button Mute the inteventions  for the rest of the day#####################################################
+//    ############################ end of For 3rd button Mute the interventions  for the rest of the day#####################################################
     public String getTodaysDateFormatted(){
         Date currentDate = new Date();
         // Define a date format
