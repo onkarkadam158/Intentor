@@ -189,6 +189,10 @@ public class OverlayService extends Service {
 
     public void showTheOverlay(String packageName) {
         overlayView.setVisibility(View.VISIBLE);
+        AppUsageStatistics appUsageStatistics = new AppUsageStatistics(this);
+        TextView statisticsTextView = overlayView.findViewById(R.id.statisticsTextView);
+        statisticsTextView.setText("Todays phone usage time: "+formatDuration(appUsageStatistics.calculatePhoneUsageOfToday())+ "\nTodays Phone unlock Count: "+appUsageStatistics.calculatePhoneUnlockCountsOfToday());
+
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -210,7 +214,7 @@ public class OverlayService extends Service {
                 addActionToSharedprefOfButton2(packageName);
                 hideTheOverlay();
                 openButton2ClickedPrompt();
-                executeCountdownTimer();
+                executeCountdownTimer(packageName);
             }
         });
 
@@ -318,7 +322,7 @@ public class OverlayService extends Service {
         editor.putString(dayTime, packageName);
         editor.apply();
     }
-    public void executeCountdownTimer() {
+    public void executeCountdownTimer(String packageName) {
         // Create a CountDownTimer for 10 minutes (10 * 60 * 1000 milliseconds)
         if(countDownTimer!=null){
             countDownTimer.cancel();
@@ -334,13 +338,13 @@ public class OverlayService extends Service {
                 long seconds = (millisUntilFinished / 1000) % 60;
                 countdownTextView.setText(String.format("%02d:%02d", minutes, seconds));
                 // Change background color based on remaining time
-                if (millisUntilFinished <= 9 * 60 * 1000 ) { // 2 minutes remaining
+                if (millisUntilFinished <= 2 * 60 * 1000 ) { // 2 minutes remaining
                     countdownTextView.setBackground(getDrawable(R.drawable.redbutton));
-                } else if (millisUntilFinished <= 9 * 60 * 1000 + 30*1000) { // 5 minutes remaining
+                } else if (millisUntilFinished <= 5 * 60 * 1000 + 30*1000) { // 5 minutes remaining
                     countdownTextView.setBackground(getDrawable(R.drawable.yellowbutton));
                 }
                 //small vibrations at the end of time
-                if(millisUntilFinished<= 9*60*1000){
+                if(millisUntilFinished<= 2*60*1000){
                     if (vibrator != null && seconds%5==0) {
                         // Vibrate for 500 milliseconds (for every 5 seconds interval)
                         vibrator.vibrate(500);
@@ -354,7 +358,7 @@ public class OverlayService extends Service {
                 countdownTextView.setText("00:00");
                 // You can perform actions here when the countdown complete
                 closeButton2ClickedPrompt();
-                showTheOverlay();
+                showTheOverlay(packageName);
             }
         };
 

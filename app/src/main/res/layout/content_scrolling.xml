@@ -18,8 +18,6 @@
         tools:context=".DashboardActivity">
 
         <!-- Other views here -->
-
-
         <com.github.mikephil.charting.charts.BarChart
             android:id="@+id/barChartOfUsageTime"
             android:layout_width="match_parent"
@@ -54,6 +52,39 @@
             android:textStyle="bold"
             android:textSize="10dp"/>
 
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChartOfWeeklyPhoneUsage"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/chartDescriptionOfWeeklyPhoneUsage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:textStyle="bold"
+            android:textSize="10dp"/>
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChartOfWeeklyPhoneVisitCount"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/chartDescriptionOfWeeklyPhoneVisitCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:textStyle="bold"
+            android:textSize="10dp"/>
     </LinearLayout>
 
 

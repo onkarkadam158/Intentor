@@ -62,7 +62,6 @@ public class LoginActivity extends AppCompatActivity {
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        //notification method
         // Issue the notification
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
@@ -71,10 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 //        if(loginDetails!=null && loginDetails.contains("RegistrationID")){
 //            updateUiWithUser();
 //        }
-        Intent serviceIntent1 = new Intent(getApplicationContext(), NotificationForegroundService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent1);
-        }
+
         final EditText usernameEditText = binding.username;
         final Button loginButton = binding.login;
 
@@ -86,26 +82,28 @@ public class LoginActivity extends AppCompatActivity {
                 return true;
             }
         });
-        // Start monitoring app launch in a background thread ########################################33333##############
-        System.out.println("applaunch");
+        // Start monitoring app launch in a background thread ######################################################
 
 //      AppLaunchMonitorService appLaunchMonitorService = new AppLaunchMonitorService();
-        Intent serviceIntent = new Intent(getApplicationContext(), AppLaunchMonitorService.class);
-        startService(serviceIntent);
-
-//        appLaunchMonitorService.onStartCommand(serviceIntent,0,0);
-        System.out.println("started Intent");
-
+//        Intent serviceIntent = new Intent(getApplicationContext(), AppLaunchMonitorService.class);
+//        startService(serviceIntent);
+        Intent serviceIntent1 = new Intent(getApplicationContext(), NotificationForegroundService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent1);
+        }
+        else {
+            startService(serviceIntent1);
+        }
         //##################################################################################################################################
 
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateUiWithUser();
+
                 if (!isValidID(usernameEditText.getText().toString())) {
                     Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_SHORT).show();
-                    return;
+//                    return;
                 }
                 if (!hasUsageStatsPermission()) {
                     requestUsageStatsPermission();
@@ -115,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
                     requestOverlayPermission();
                     return;
                 }
+                updateUiWithUser();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -134,7 +133,7 @@ public class LoginActivity extends AppCompatActivity {
                                 if (response.contains("status") && response.contains("success")) {
                                     // Perform operations for successful status
                                     SharedPreferences.Editor editor = loginDetails.edit();
-                                    editor.putString("RegistrationID",entered_response_code);
+                                    editor.putString("RegistrationID", entered_response_code);
                                     editor.apply();
                                     updateUiWithUser();
                                 } else {
@@ -150,40 +149,6 @@ public class LoginActivity extends AppCompatActivity {
                 }).start();
             }
         });
-    }
-
-    public void createNotificationMethod() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "notif0",
-                    "My Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "my_channel_id")
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Intentor")
-                .setContentText("Your Todays usage: 00H:00M")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        // Add actions, if needed
-        // builder.addAction(R.drawable.ic_action, "Action Name", pendingIntent);
-        Notification notification = builder.build();
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        int notificationId = 1; // An integer ID for the notification
-
-        // Issue the notification
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted, request it from the user.
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
-
-        }
-
-        notificationManager.notify(notificationId, notification);
     }
 
     private void updateUiWithUser() {
