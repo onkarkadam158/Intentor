@@ -24,6 +24,18 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
 
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Dashboard"
+                android:textSize="24sp"
+                android:textColor="#fff"
+                android:layout_marginTop="16dp"
+                app:layout_collapseMode="pin"
+                app:layout_collapseParallaxMultiplier="0.0" />
+
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -36,7 +48,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_scrolling"    />
+    <include layout="@layout/content_scrolling" />
 
     <include layout="@layout/footer_layout" />
 

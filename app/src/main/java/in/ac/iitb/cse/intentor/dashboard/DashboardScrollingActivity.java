@@ -49,11 +49,16 @@ public class DashboardScrollingActivity extends AppCompatActivity {
 
         BarChart barChartOfUsageTime = findViewById(R.id.barChartOfUsageTime);
         BarChart barChartOfVisitCount = findViewById(R.id.barChartOfVisitCount);
+        BarChart barChartOfWeeklyPhoneUsage = findViewById(R.id.barChartOfWeeklyPhoneUsage);
+        BarChart barChartOfWeeklyPhoneVisitCount = findViewById(R.id.barChartOfWeeklyPhoneVisitCount);
 
 //        TextView appUsageTextView = findViewById(R.id.appUsageTextView);
 
         AppUsageStatistics appUsageStatistics = new AppUsageStatistics(this);
         List<AppUsageInfo> appUsageInfoList = appUsageStatistics.getUsageStatistics();
+
+        WeeklyUsageStatistics weeklyUsageStatistics = new WeeklyUsageStatistics(this);
+        List<WeeklyUsageInfo> weeklyUsageInfoList = weeklyUsageStatistics.getWeeklyUsageInfoList();
 
         StringBuilder stringBuilder = new StringBuilder();
         for (AppUsageInfo appUsageInfo : appUsageInfoList) {
@@ -65,9 +70,94 @@ public class DashboardScrollingActivity extends AppCompatActivity {
             stringBuilder.append("Todays App visits: ").append(todaysAppVisits).append("\n\n");
         }
 //        appUsageTextView.setText(stringBuilder.toString());
-        createAndDisplayGraphs(barChartOfUsageTime,barChartOfVisitCount,appUsageInfoList);
+        createAndDisplayGraphsOfDaily(barChartOfUsageTime,barChartOfVisitCount,appUsageInfoList);
+        createAndDisplayGraphsOfWeekly(barChartOfWeeklyPhoneUsage,barChartOfWeeklyPhoneVisitCount,weeklyUsageInfoList);
     }
-    public void createAndDisplayGraphs(BarChart barChartOfUsageTime,BarChart barChartOfVisitCount, List<AppUsageInfo> appUsageInfoList){
+    public void createAndDisplayGraphsOfWeekly(BarChart barChartOfUsageTime,BarChart barChartOfVisitCount, List<WeeklyUsageInfo> weeklyUsageInfoList){
+        setupBarChart(barChartOfUsageTime);
+        setupBarChart(barChartOfVisitCount);
+
+        // Populate the chart with data
+        populateBarChartOfUsageTimeWeekly(barChartOfUsageTime, weeklyUsageInfoList);
+        populateBarChartOfVisitCountWeekly(barChartOfVisitCount, weeklyUsageInfoList);
+    }
+
+    private void populateBarChartOfUsageTimeWeekly(BarChart barChartOfUsageTime, List<WeeklyUsageInfo> weeklyUsageInfoList) {
+        List<BarEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < weeklyUsageInfoList.size(); i++) {
+            WeeklyUsageInfo weeklyUsageInfo = weeklyUsageInfoList.get(i);
+            float usageTime = weeklyUsageInfo.getPhoneUsageTimeinMilli()/(60000); // in minutes
+            String appName = weeklyUsageInfo.getDay();
+//            System.out.println(appName+"--time--"+usageTime+"---Packagename--"+appUsageInfo.getPackageName());
+            entries.add(new BarEntry(i, usageTime, appName)); // Add usage time and app name
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "App Usage");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.6f); // Adjust bar width
+
+        barChartOfUsageTime.setData(barData);
+        final String[] days = new String[weeklyUsageInfoList.size()];
+        for (int i = 0; i < weeklyUsageInfoList.size(); i++) {
+            days[i] = weeklyUsageInfoList.get(i).getDay();
+        }
+
+        XAxis xAxis = barChartOfUsageTime.getXAxis();
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                int index = (int) value;
+                if (index >= 0 && index < days.length) {
+                    return days[index];
+                }
+                return ""; // Return an empty label if the index is out of range
+            }
+        });
+        barChartOfUsageTime.invalidate(); // Refresh the chart
+    }
+
+    private void populateBarChartOfVisitCountWeekly(BarChart barChartOfVisitCount, List<WeeklyUsageInfo> weeklyUsageInfoList) {
+        List<BarEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < weeklyUsageInfoList.size(); i++) {
+            WeeklyUsageInfo weeklyUsageInfo = weeklyUsageInfoList.get(i);
+            float visitCountsOfToday = weeklyUsageInfo.getPhoneUnlockCount(); // in numbers
+            String appName = weeklyUsageInfo.getDay();
+//            System.out.println(appName+"--visitCountsOfToday--"+visitCountsOfToday+"---Packagename--"+appUsageInfo.getPackageName());
+            entries.add(new BarEntry(i, visitCountsOfToday, appName)); // Add usage time and app name
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "App Usage");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.6f); // Adjust bar width
+
+
+        barChartOfVisitCount.setData(barData);
+        final String[] days = new String[weeklyUsageInfoList.size()];
+        for (int i = 0; i < weeklyUsageInfoList.size(); i++) {
+            days[i] = weeklyUsageInfoList.get(i).getDay();
+        }
+
+        XAxis xAxis = barChartOfVisitCount.getXAxis();
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                int index = (int) value;
+                if (index >= 0 && index < days.length) {
+                    return days[index];
+                }
+                return ""; // Return an empty label if the index is out of range
+            }
+        });
+        barChartOfVisitCount.invalidate(); // Refresh the chart
+    }
+
+    public void createAndDisplayGraphsOfDaily(BarChart barChartOfUsageTime,BarChart barChartOfVisitCount, List<AppUsageInfo> appUsageInfoList){
 
         setupBarChart(barChartOfUsageTime);
         setupBarChart(barChartOfVisitCount);
