@@ -14,7 +14,6 @@
     <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"/>
     <uses-permission android:name="android.permission.VIBRATE" />
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -26,6 +25,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Intentor"
         tools:targetApi="31">
+        <receiver
+            android:name=".ui.login.NotificationDeleteReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="DELETE_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".ui.login.UnlockReceiver"
             android:enabled="true"
@@ -41,6 +48,10 @@
             android:exported="false"
             android:label="@string/title_activity_alert_box"
             android:theme="@style/Theme.Intentor" />
+        <service
+            android:name=".ui.login.NotificationForegroundService"
+            android:enabled="true"
+            android:exported="false" />
 
         <service
             android:name=".alertlaunch.AppLaunchMonitorService"

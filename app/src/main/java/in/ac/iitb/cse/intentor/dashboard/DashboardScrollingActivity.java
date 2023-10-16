@@ -1,25 +1,21 @@
 package in.ac.iitb.cse.intentor.dashboard;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+
+import androidx.annotation.ColorInt;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
@@ -100,7 +96,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f); // Display labels for each bar
+//        xAxis.setGranularity(1f); // Display labels for each bar
 //        xAxis.setLabelRotationAngle(90);
         YAxis yAxis = barChart.getAxisLeft();
         yAxis.setEnabled(true); // Enable Y-axis
@@ -109,7 +105,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         barChart.getAxisRight().setEnabled(false); // Hide right axis
 
         barChart.animateXY(1000, 1000, Easing.EaseInOutQuad);
-        barChart.setExtraBottomOffset(10f); // Additional bottom padding
+        barChart.setExtraBottomOffset(2f); // Additional bottom padding
         barChart.setFitBars(true); // Bars fit inside the chart's margins
 
         //About bars
@@ -132,7 +128,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.8f); // Adjust bar width
+        barData.setBarWidth(0.7f); // Adjust bar width
 
         barChart.setData(barData);
         final String[] appNames = new String[appUsageInfoList.size()];
@@ -168,7 +164,8 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.8f); // Adjust bar width
+        barData.setBarWidth(0.7f); // Adjust bar width
+
 
         barChart.setData(barData);
         final String[] appNames = new String[appUsageInfoList.size()];

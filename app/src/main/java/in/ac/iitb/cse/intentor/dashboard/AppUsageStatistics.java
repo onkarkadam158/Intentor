@@ -315,18 +315,18 @@ public class AppUsageStatistics {
 //            }
 //        }
         // Iterate over the nested Map usageSessionsWithTimestampOfApps map
-        System.out.println("Printing the usage sessions");
-        for (Map.Entry<String, Map<String, String>> entry : usageSessionsWithTimestampOfApps.entrySet()) {
-            String appName = entry.getKey();
-            Map<String, String> timestamps = entry.getValue();
-            System.out.println("App Name: " + appName+" \n");
-            // Iterate over the inner Map
-            for (Map.Entry<String, String> timestampEntry : timestamps.entrySet()) {
-                String timestampKey = timestampEntry.getKey();
-                String timestampValue = timestampEntry.getValue();
-                System.out.println("Timestamp Key: " + timestampKey + ", Timestamp Value: " + timestampValue+" \n");
-            }
-        }
+//        System.out.println("Printing the usage sessions");
+//        for (Map.Entry<String, Map<String, String>> entry : usageSessionsWithTimestampOfApps.entrySet()) {
+//            String appName = entry.getKey();
+//            Map<String, String> timestamps = entry.getValue();
+//            System.out.println("App Name: " + appName+" \n");
+//            // Iterate over the inner Map
+//            for (Map.Entry<String, String> timestampEntry : timestamps.entrySet()) {
+//                String timestampKey = timestampEntry.getKey();
+//                String timestampValue = timestampEntry.getValue();
+//                System.out.println("Timestamp Key: " + timestampKey + ", Timestamp Value: " + timestampValue+" \n");
+//            }
+//        }
 //        OUTPUT: Printing the usage sessions
 //        App Name: com.google.android.youtube
 //        Timestamp Key: 10:33:38, Timestamp Value: 00H:00M:12S
