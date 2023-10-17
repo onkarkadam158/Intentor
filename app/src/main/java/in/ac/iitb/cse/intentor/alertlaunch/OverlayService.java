@@ -519,6 +519,7 @@ public class OverlayService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+//        stopSelf();
         // Remove the overlay view when the service is destroyed
         if (overlayView != null && windowManager != null) {
             windowManager.removeView(overlayView);
@@ -531,7 +532,7 @@ public class OverlayService extends Service {
         long minutes = (milliseconds / (1000 * 60)) % 60;
         long hours = (milliseconds / (1000 * 60 * 60));
         // Format the duration as "hh:mm:ss"
-        String formattedTime = String.format("%02dH:%02dM:%02dS", hours, minutes, seconds);
+        String formattedTime = String.format("%02dH:%02dM:", hours, minutes);
         return formattedTime;
     }
 

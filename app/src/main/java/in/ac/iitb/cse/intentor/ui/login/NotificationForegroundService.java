@@ -8,6 +8,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.ComponentName;
@@ -24,9 +25,13 @@ import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.Timer;
 
 import in.ac.iitb.cse.intentor.R;
@@ -129,10 +134,20 @@ public class NotificationForegroundService extends Service {
                     Intent overlayIntent = new Intent(getApplicationContext(), OverlayService.class);
                     eventOccurred = monitorForegroundApp();
                     if (!eventOccurred.equals("false")) {
-
                         overlayIntent.putExtra("packageName", eventOccurred);
                         startService(overlayIntent);
                     }
+//                    String packageName=isForeground();
+//                    if(!packageName.equals("")){
+//                        System.out.println("Foreground: "+packageName);
+//                        overlayIntent.putExtra("packageName", packageName);
+//                        startService(overlayIntent);
+//                    }
+//                    String bgpackage=isBackGround();
+//                    if(!bgpackage.equals("No_package")){
+//                        System.out.println("background: "+bgpackage);
+//                        stopService(overlayIntent);
+//                    }
 //                Adding a delay to avoid excessive CPU usage
                     try {
                         Thread.sleep(500); // Check every half second (adjust interval as needed)
@@ -152,7 +167,7 @@ public class NotificationForegroundService extends Service {
 
                     // Schedule the next update after a delay (e.g., every 10 seconds)
                     try {
-                        Thread.sleep(10000); // 10 seconds
+                        Thread.sleep(30000); // 30 seconds
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -173,6 +188,51 @@ public class NotificationForegroundService extends Service {
         return START_STICKY;
     }
 
+    private String isBackGround() {
+        UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        long currentTime = System.currentTimeMillis();
+
+        // Query for usage statistics
+        UsageEvents.Event event = new UsageEvents.Event();
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 499, currentTime); // Query for the last 1 second
+
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND) {
+                // The app switched to the background
+                if(targetAppPackageNames.containsKey(event.getPackageName())){
+                    return event.getPackageName();
+                }
+            }
+        }
+        return "No_package";
+    }
+
+    private String isForeground() {
+        UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        long currentTime = System.currentTimeMillis();
+
+        // Query for usage statistics
+        UsageEvents.Event event = new UsageEvents.Event();
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 499, currentTime); // Query for the last 1 seconds
+
+        while (usageEvents.hasNextEvent()) {
+            usageEvents.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND
+                    || event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
+                    || event.getEventType() == UsageEvents.Event.USER_INTERACTION
+                    || event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                String foregroundAppPackageName = event.getPackageName();
+
+                // Check if the foreground app's package name matches the one you're interested in
+                if (targetAppPackageNames.containsKey(foregroundAppPackageName) ){
+                    // The target app is in the foreground and visible to the user
+                    return foregroundAppPackageName;
+                }
+            }
+        }
+        return "";
+    }
     public String monitorForegroundApp() {
 
 //        System.out.println("Inside monitor fore app");
@@ -185,9 +245,9 @@ public class NotificationForegroundService extends Service {
 
         if (usageStatsList != null && !usageStatsList.isEmpty()) {
             for (UsageStats usageStats : usageStatsList) {
-                String packagename = usageStats.getPackageName();
-
                 if (usageStats.getLastTimeUsed() >= (currentTime - 1000)) {
+                    String packagename = usageStats.getPackageName();
+                    System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()));
 //                    System.out.println("package: "+usageStats.getPackageName());
                     if (targetAppPackageNames.containsKey(packagename)) {
                         return packagename;
@@ -310,6 +370,12 @@ public class NotificationForegroundService extends Service {
             formattedTime = String.format("%02d Hour %02d Minutes", hours, minutes);
         }
         return formattedTime;
+    }
+    public static String formatMillisecondsToTime(long milliseconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        Date date = new Date(milliseconds);
+        return sdf.format(date);
     }
     @Nullable
     @Override
