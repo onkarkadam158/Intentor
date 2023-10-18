@@ -135,7 +135,7 @@ public class OverlayService extends Service {
         String temp1=mutedAppsWithTime.getAll().toString();
 //        System.out.println("\nMutedApp with time\n"+temp1+"\n");
 //        System.out.println("\nExited apps list with time\n"+exitedApps.getAll().toString()+"\n");
-//        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
+        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
 
         if(!isappMutedForTheDay(packageName)){
 //            System.out.println(temp+"app is not muted");

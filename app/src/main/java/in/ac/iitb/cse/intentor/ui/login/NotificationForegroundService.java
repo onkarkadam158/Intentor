@@ -241,11 +241,11 @@ public class NotificationForegroundService extends Service {
         }
         currentTime = System.currentTimeMillis();
 
-        usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 2000, currentTime);
+        usageStatsList = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 499, currentTime);
 
         if (usageStatsList != null && !usageStatsList.isEmpty()) {
             for (UsageStats usageStats : usageStatsList) {
-                if (usageStats.getLastTimeUsed() >= (currentTime - 1000)) {
+                if (usageStats.getLastTimeUsed() >= (currentTime - 499)) {
                     String packagename = usageStats.getPackageName();
                     System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()));
 //                    System.out.println("package: "+usageStats.getPackageName());
