@@ -60,15 +60,15 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         WeeklyUsageStatistics weeklyUsageStatistics = new WeeklyUsageStatistics(this);
         List<WeeklyUsageInfo> weeklyUsageInfoList = weeklyUsageStatistics.getWeeklyUsageInfoList();
 
-        StringBuilder stringBuilder = new StringBuilder();
-        for (AppUsageInfo appUsageInfo : appUsageInfoList) {
-            String appName = appUsageInfo.getPackageName();
-            long todaysTotalUsageTime = appUsageInfo.getTotalUsageTimeOfToday();
-            long todaysAppVisits = appUsageInfo.getTotalVisitCountsOfToday();
-            stringBuilder.append("App: ").append(appName).append("\n");
-            stringBuilder.append("Todays Time: ").append(formatTime(todaysTotalUsageTime)).append("\n");
-            stringBuilder.append("Todays App visits: ").append(todaysAppVisits).append("\n\n");
-        }
+//        StringBuilder stringBuilder = new StringBuilder();
+//        for (AppUsageInfo appUsageInfo : appUsageInfoList) {
+//            String appName = appUsageInfo.getPackageName();
+//            long todaysTotalUsageTime = appUsageInfo.getTotalUsageTimeOfToday();
+//            long todaysAppVisits = appUsageInfo.getTotalVisitCountsOfToday();
+//            stringBuilder.append("App: ").append(appName).append("\n");
+//            stringBuilder.append("Todays Time: ").append(formatTime(todaysTotalUsageTime)).append("\n");
+//            stringBuilder.append("Todays App visits: ").append(todaysAppVisits).append("\n\n");
+//        }
 //        appUsageTextView.setText(stringBuilder.toString());
         createAndDisplayGraphsOfDaily(barChartOfUsageTime,barChartOfVisitCount,appUsageInfoList);
         createAndDisplayGraphsOfWeekly(barChartOfWeeklyPhoneUsage,barChartOfWeeklyPhoneVisitCount,weeklyUsageInfoList);
@@ -125,9 +125,9 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         for (int i = 0; i < weeklyUsageInfoList.size(); i++) {
             WeeklyUsageInfo weeklyUsageInfo = weeklyUsageInfoList.get(i);
             float visitCountsOfToday = weeklyUsageInfo.getPhoneUnlockCount(); // in numbers
-            String appName = weeklyUsageInfo.getDay();
+            String dayName = weeklyUsageInfo.getDay();
 //            System.out.println(appName+"--visitCountsOfToday--"+visitCountsOfToday+"---Packagename--"+appUsageInfo.getPackageName());
-            entries.add(new BarEntry(i, visitCountsOfToday, appName)); // Add usage time and app name
+            entries.add(new BarEntry(i, visitCountsOfToday, dayName)); // Add usage time and app name
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "App Usage");
@@ -173,13 +173,13 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         barChart.setDrawGridBackground(false);
 
         //Setting TextViews
-        TextView chartDescription = findViewById(R.id.chartDescriptionOfUsageTime);
-        chartDescription.setText("App Usage (In minutes)");
-        chartDescription.setVisibility(View.VISIBLE);
-
-        TextView chartDescriptionOfVisitCount = findViewById(R.id.chartDescriptionOfVisitCount);
-        chartDescriptionOfVisitCount.setText("App Visit Counts");
-        chartDescriptionOfVisitCount.setVisibility(View.VISIBLE);
+//        TextView chartDescription = findViewById(R.id.chartDescriptionOfUsageTime);
+//        chartDescription.setText("App Usage (In minutes)");
+//        chartDescription.setVisibility(View.VISIBLE);
+//
+//        TextView chartDescriptionOfVisitCount = findViewById(R.id.chartDescriptionOfVisitCount);
+//        chartDescriptionOfVisitCount.setText("App Visit Counts");
+//        chartDescriptionOfVisitCount.setVisibility(View.VISIBLE);
         ////done with textview
 
         //AXIS Prperties
@@ -218,7 +218,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.7f); // Adjust bar width
+        barData.setBarWidth(0.6f); // Adjust bar width
 
         barChart.setData(barData);
         final String[] appNames = new String[appUsageInfoList.size()];
@@ -254,7 +254,7 @@ public class DashboardScrollingActivity extends AppCompatActivity {
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
         BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.7f); // Adjust bar width
+        barData.setBarWidth(0.6f); // Adjust bar width
 
 
         barChart.setData(barData);

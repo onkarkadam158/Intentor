@@ -34,6 +34,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
             android:textStyle="bold"
+            android:text="Daily Social Media Usage (in Minutes)"
             android:textSize="10dp"/>
 
         <com.github.mikephil.charting.charts.BarChart
@@ -51,6 +52,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
             android:textStyle="bold"
+            android:text="Daily App Access Counts"
             android:textSize="10dp"/>
 
         <com.github.mikephil.charting.charts.BarChart

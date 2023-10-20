@@ -3,6 +3,7 @@ package in.ac.iitb.cse.intentor.dashboard;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,9 +33,13 @@ public class WeeklyUsageStatistics {
         userAppPackageMap1.put("com.whatsapp", true);             // WhatsApp
         userAppPackageMap1.put("com.google.android.youtube", true); // Youtube
     }
+    private SharedPreferences shPrefOfPhoneUsageTime, shPrefOfPhoneUnlockCount ;
+
     public WeeklyUsageStatistics(Context context) {
         this.context = context;
         usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+        shPrefOfPhoneUsageTime = context.getSharedPreferences("shPrefOfPhoneUsageTime",Context.MODE_PRIVATE);
+        shPrefOfPhoneUnlockCount = context.getSharedPreferences("shPrefOfPhoneUnlockCount",Context.MODE_PRIVATE);
     }
 
     public List<WeeklyUsageInfo> getWeeklyUsageInfoList(){
@@ -54,10 +59,36 @@ public class WeeklyUsageStatistics {
             WeeklyUsageInfo weeklyUsageInfo = new WeeklyUsageInfo();
             weeklyUsageInfo.setDay(getDayFromStartTime(startTimeMillis));
             weeklyUsageInfo.setDate(getDateFromStartTime(startTimeMillis));
-            weeklyUsageInfo.setPhoneUsageTimeinMilli(getphoneUsageTimeInMillis(startTimeMillis,endTimeMillis));
-            weeklyUsageInfo.setPhoneUnlockCount(getPhoneUnlockCounts(startTimeMillis,endTimeMillis));
 
-            System.out.println("Day: "+ weeklyUsageInfo.getDay()+ " Date: "+ weeklyUsageInfo.getDate()+" Unlock: "+ weeklyUsageInfo.getPhoneUnlockCount() + " Usage: "+ weeklyUsageInfo.getPhoneUsageTimeinMilli()+"\n");
+            String date = getDateFromStartTime(startTimeMillis);
+            //For Usage time caching
+            if (shPrefOfPhoneUsageTime.contains(date)) {
+                // The key exists in SharedPreferences retrieve the value associated with the key
+                long time = shPrefOfPhoneUsageTime.getLong(date, 0);
+                weeklyUsageInfo.setPhoneUsageTimeinMilli(time);
+            } else {
+                // The key does not exist in SharedPreferences we add it now (so we don't have to calculate it again and again)
+                long time = getphoneUsageTimeInMillis(startTimeMillis, endTimeMillis);
+                SharedPreferences.Editor editor = shPrefOfPhoneUsageTime.edit();
+                editor.putLong(date, time);
+                editor.apply();
+                weeklyUsageInfo.setPhoneUsageTimeinMilli(time);
+            }
+            //for unlock count caching
+            if(shPrefOfPhoneUnlockCount.contains(date)){
+                // The key exists in SharedPreferences retrieve the value associated with the key
+                long unlockCount=shPrefOfPhoneUnlockCount.getLong(date,0);
+                weeklyUsageInfo.setPhoneUnlockCount(unlockCount);
+            }
+            else{
+                // The key does not exist in SharedPreferences we add it now (so we don't have to calculate it again and again)
+                long unlockCount = getPhoneUnlockCounts(startTimeMillis,endTimeMillis);
+                SharedPreferences.Editor editor = shPrefOfPhoneUnlockCount.edit();
+                editor.putLong(date,unlockCount);
+                editor.apply();
+                weeklyUsageInfo.setPhoneUnlockCount(unlockCount);
+            }
+//            System.out.println("Day: "+ weeklyUsageInfo.getDay()+ " Date: "+ weeklyUsageInfo.getDate()+" Unlock: "+ weeklyUsageInfo.getPhoneUnlockCount() + " Usage: "+ weeklyUsageInfo.getPhoneUsageTimeinMilli()+"\n");
 //            This is how the output looks like
 //            Day: Tuesday Date: 2023-10-10 Unlock: 109 Usage: 11653751
 //            Day: Wednesday Date: 2023-10-11 Unlock: 74 Usage: 19448589
