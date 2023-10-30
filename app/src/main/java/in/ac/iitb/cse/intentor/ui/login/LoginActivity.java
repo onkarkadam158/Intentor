@@ -39,6 +39,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import in.ac.iitb.cse.intentor.R;
+import in.ac.iitb.cse.intentor.UploadTrackedData.CollectData;
 import in.ac.iitb.cse.intentor.alertlaunch.AppLaunchMonitorService;
 import in.ac.iitb.cse.intentor.alertlaunch.OverlayService;
 import in.ac.iitb.cse.intentor.dashboard.DashboardScrollingActivity;
@@ -62,14 +63,14 @@ public class LoginActivity extends AppCompatActivity {
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        loginDetails = getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
         // Issue the notification
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
         }
-//        loginDetails = getSharedPreferences("LoginDetailsOfUsers",Context.MODE_PRIVATE);
-//        if(loginDetails!=null && loginDetails.contains("RegistrationID")){
-//            updateUiWithUser();
-//        }
+        if(loginDetails!=null && loginDetails.contains("RegistrationID")){
+            updateUiWithUser();
+        }
 
         final EditText usernameEditText = binding.username;
         final Button loginButton = binding.login;
@@ -97,14 +98,16 @@ public class LoginActivity extends AppCompatActivity {
         //##################################################################################################################################
 
 
+        CollectData collectData = new CollectData(this);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (!isValidID(usernameEditText.getText().toString())) {
-                    Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_SHORT).show();
+
+//                if (!isValidID(usernameEditText.getText().toString())) {
+//                    Toast.makeText(getApplicationContext(), "Enter Valid Participation ID", Toast.LENGTH_SHORT).show();
 //                    return;
-                }
+//                }
                 if (!hasUsageStatsPermission()) {
                     requestUsageStatsPermission();
                     return;
@@ -113,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                     requestOverlayPermission();
                     return;
                 }
-                updateUiWithUser();
+//                updateUiWithUser();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -129,15 +132,21 @@ public class LoginActivity extends AppCompatActivity {
 //                                SERVER_URL = temp.getServerURL();
 //                            }
                             String response = apiService.getApiResponse(SERVER_URL, entered_response_code);
+                            try {
+                                collectData.uploadDataToServer();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                             if (response != null) {
                                 if (response.contains("status") && response.contains("success")) {
                                     // Perform operations for successful status
                                     SharedPreferences.Editor editor = loginDetails.edit();
                                     editor.putString("RegistrationID", entered_response_code);
                                     editor.apply();
+//                                    Toast.makeText(getApplicationContext(), "Registration confirmed\nWelcome to Intentor", Toast.LENGTH_SHORT).show();
                                     updateUiWithUser();
                                 } else {
-                                    Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+//                                    Toast.makeText(getApplicationContext(), response, Toast.LENGTH_SHORT).show();
                                 }
                             }
                             System.out.println(response);

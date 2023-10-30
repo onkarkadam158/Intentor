@@ -50,6 +50,7 @@ dependencies {
     implementation 'com.daimajia.easing:library:2.4@aar'
     implementation 'com.daimajia.androidanimations:library:2.4@aar'
     implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.code.gson:gson:2.8.8' // Adjust the version as needed
 
 
     implementation 'androidx.appcompat:appcompat:1.6.1'

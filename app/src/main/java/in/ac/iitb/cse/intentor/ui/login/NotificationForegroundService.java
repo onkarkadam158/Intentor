@@ -150,7 +150,7 @@ public class NotificationForegroundService extends Service {
 //                    }
 //                Adding a delay to avoid excessive CPU usage
                     try {
-                        Thread.sleep(500); // Check every half second (adjust interval as needed)
+                        Thread.sleep(301); // Check every half second (adjust interval as needed)
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -245,9 +245,9 @@ public class NotificationForegroundService extends Service {
 
         if (usageStatsList != null && !usageStatsList.isEmpty()) {
             for (UsageStats usageStats : usageStatsList) {
-                if (usageStats.getLastTimeUsed() >= (currentTime - 499)) {
+                if (usageStats.getLastTimeUsed() >= (currentTime - 300)) {
                     String packagename = usageStats.getPackageName();
-                    System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()));
+//                    System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()));
 //                    System.out.println("package: "+usageStats.getPackageName());
                     if (targetAppPackageNames.containsKey(packagename)) {
                         return packagename;

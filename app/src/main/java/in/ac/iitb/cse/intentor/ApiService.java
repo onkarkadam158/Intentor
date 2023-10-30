@@ -11,7 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiService {
-    public String getApiResponse(String apiUrl,String response_code) throws IOException {
+    public String getApiResponse(String apiUrl, String response_code) throws IOException {
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -28,7 +28,7 @@ public class ApiService {
         StringBuilder response = new StringBuilder();
         String line;
 
-        
+
         while ((line = bufferedReader.readLine()) != null) {
             response.append(line);
         }
@@ -36,5 +36,33 @@ public class ApiService {
         bufferedReader.close();
 //        return "Response" + response + "\nResponse Code" + responseCode + "\nError" + responseMessage  ;
         return response.toString();
+    }
+
+    public String postJsonToServer(String apiUrl, String json) throws IOException {
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+
+        // Send registration ID in the request body
+        String requestBody = json;
+        OutputStream outputStream = connection.getOutputStream();
+        outputStream.write(requestBody.getBytes());
+        outputStream.close();
+
+        InputStream inputStream = connection.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder response = new StringBuilder();
+        String line;
+
+
+        while ((line = bufferedReader.readLine()) != null) {
+            response.append(line);
+        }
+
+        bufferedReader.close();
+//        return "Response" + response + "\nResponse Code" + responseCode + "\nError" + responseMessage  ;
+        return response.toString();
+
     }
 }

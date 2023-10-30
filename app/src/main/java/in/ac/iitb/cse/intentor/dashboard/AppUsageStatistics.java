@@ -23,10 +23,12 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.Vector;
 
+import in.ac.iitb.cse.intentor.UploadTrackedData.CollectData;
+
 public class AppUsageStatistics {
 
-    private final Context context;
-    private final UsageStatsManager usageStatsManager;
+    public Context context;
+    private UsageStatsManager usageStatsManager;
     public static Map<String, Boolean> userAppPackageMap1 = new HashMap<>();
 
     static {
@@ -44,7 +46,6 @@ public class AppUsageStatistics {
     public AppUsageStatistics(Context context) {
         this.context = context;
         usageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-
     }
 
     public List<AppUsageInfo> getUsageStatistics() {
@@ -357,7 +358,7 @@ public class AppUsageStatistics {
                     phoneUnlockCount++;
             }
         }
-        System.out.println("Phone Unlock Count"+phoneUnlockCount);
+//        System.out.println("Phone Unlock Count"+phoneUnlockCount);
         return phoneUnlockCount;
     }
     public long calculatePhoneUsageOfToday(){
@@ -389,7 +390,7 @@ public class AppUsageStatistics {
                 }
             }
         }
-        System.out.println("Phone usage time"+formatDuration(phoneUsageTimeOfToday) + "  "+formatMillisecondsToTime(phoneUsageTimeOfToday));
+//        System.out.println("Phone usage time"+formatDuration(phoneUsageTimeOfToday) + "  "+formatMillisecondsToTime(phoneUsageTimeOfToday));
         return phoneUsageTimeOfToday;
     }
     public static Map<String, Boolean> getUserAppsPackages(Context context) {

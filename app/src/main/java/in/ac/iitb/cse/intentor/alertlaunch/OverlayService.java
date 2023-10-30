@@ -167,7 +167,7 @@ public class OverlayService extends Service {
 
         // Query for usage statistics
         UsageEvents.Event event = new UsageEvents.Event();
-        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 1000, currentTime); // Query for the last 1 seconds
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 300, currentTime); // Query for the last 1 seconds
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
