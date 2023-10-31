@@ -127,27 +127,31 @@ public class OverlayService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String packageName = intent.getStringExtra("packageName");
-        appName = getAppNameFromPackageName(packageName);
-        button1.setText("\uD83D\uDE0A  Exit the " + appName + " Now");
+        String status = intent.getStringExtra("BackOrFore");
+        System.out.println("In overlay "+packageName+" "+status);
 
-        String temp = mutedApps.getAll().toString();
-        System.out.println("\nMutedApps\n"+temp+"\n");
-        String temp1=mutedAppsWithTime.getAll().toString();
+//        String temp = mutedApps.getAll().toString();
+//        System.out.println("\nMutedApps\n"+temp+"\n");
+//        String temp1=mutedAppsWithTime.getAll().toString();
 //        System.out.println("\nMutedApp with time\n"+temp1+"\n");
 //        System.out.println("\nExited apps list with time\n"+exitedApps.getAll().toString()+"\n");
-        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
+//        System.out.println("\nRemind me later\n"+remindMelaterTimes.getAll().toString()+"\n");
 
         if(!isappMutedForTheDay(packageName)){
 //            System.out.println(temp+"app is not muted");
-            if (isforeground(packageName)) {
+            if (status.equals("1")) { //Foreground
                 if(!isAnyOverlayVisible()) {
+                    appName = getAppNameFromPackageName(packageName);
+                    button1.setText("\uD83D\uDE0A  Exit the " + appName + " Now");
                     showTheOverlay(packageName);
                 }
             }
-            else {
-                closeButton1ClickedPrompt();
-                closeButton2ClickedPrompt();
-                hideTheOverlay();
+            if(status.equals("2")) {//Background
+                if(isAnyOverlayVisible()){
+                    closeButton1ClickedPrompt();
+                    closeButton2ClickedPrompt();
+                    hideTheOverlay();
+                }
             }
         }
         else{
@@ -167,13 +171,13 @@ public class OverlayService extends Service {
 
         // Query for usage statistics
         UsageEvents.Event event = new UsageEvents.Event();
-        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 300, currentTime); // Query for the last 1 seconds
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 499, currentTime); // Query for the last 1 seconds
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
             if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND
                 || event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
-                || event.getEventType() == UsageEvents.Event.USER_INTERACTION
+//                || event.getEventType() == UsageEvents.Event.USER_INTERACTION   // this was making alert pop up when user interacts with the notification also
                 || event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
                 String foregroundAppPackageName = event.getPackageName();
 
@@ -532,7 +536,7 @@ public class OverlayService extends Service {
         long minutes = (milliseconds / (1000 * 60)) % 60;
         long hours = (milliseconds / (1000 * 60 * 60));
         // Format the duration as "hh:mm:ss"
-        String formattedTime = String.format("%02dH:%02dM:", hours, minutes);
+        String formattedTime = String.format("%02dH:%02dM", hours, minutes);
         return formattedTime;
     }
 

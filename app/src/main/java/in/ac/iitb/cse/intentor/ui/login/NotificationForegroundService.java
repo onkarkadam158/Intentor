@@ -18,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -132,11 +133,13 @@ public class NotificationForegroundService extends Service {
                 while (isMonitoring) {
                     String eventOccurred = "false";
                     Intent overlayIntent = new Intent(getApplicationContext(), OverlayService.class);
-                    eventOccurred = monitorForegroundApp();
-                    if (!eventOccurred.equals("false")) {
-                        overlayIntent.putExtra("packageName", eventOccurred);
-                        startService(overlayIntent);
-                    }
+//                    eventOccurred = monitorForegroundApp();
+                    Pair<String,String> result = isForeground();
+//                    if (!eventOccurred.equals("")) {
+                    overlayIntent.putExtra("packageName", result.first);
+                    overlayIntent.putExtra("BackOrFore",result.second);
+                    startService(overlayIntent);
+//                    }
 //                    String packageName=isForeground();
 //                    if(!packageName.equals("")){
 //                        System.out.println("Foreground: "+packageName);
@@ -150,7 +153,7 @@ public class NotificationForegroundService extends Service {
 //                    }
 //                Adding a delay to avoid excessive CPU usage
                     try {
-                        Thread.sleep(301); // Check every half second (adjust interval as needed)
+                        Thread.sleep(250); // Check every half/2 second (adjust interval as needed)
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -208,30 +211,56 @@ public class NotificationForegroundService extends Service {
         return "No_package";
     }
 
-    private String isForeground() {
+    private Pair<String,String> isForeground() {
         UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         long currentTime = System.currentTimeMillis();
-
+        String resultPackageName="",status="0";
         // Query for usage statistics
         UsageEvents.Event event = new UsageEvents.Event();
-        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 499, currentTime); // Query for the last 1 seconds
+        UsageEvents usageEvents = usageStatsManager.queryEvents(currentTime - 249, currentTime); // Query for the last 1 seconds
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
+            if (targetAppPackageNames.containsKey(event.getPackageName())){
+                System.out.println("Package: "+event.getPackageName()+" event: "+event.getEventType()+" time: "+formatMillisecondsToTime(event.getTimeStamp())+" Timestamp: "+ event.getTimeStamp() + " Class: "+event.getClassName());
+            }
+//            opened app
+//            Package: com.whatsapp event: 1 time: 08:57:14 Timestamp: 1698722834459 Class: com.whatsapp.Main
+//
+//            went to chat
+//            Package: com.whatsapp event: 2 time: 08:57:28 Timestamp: 1698722848117 Class: com.whatsapp.HomeActivity
+//            Package: com.whatsapp event: 1 time: 08:57:28 Timestamp: 1698722848126 Class: com.whatsapp.Conversation
+
+//            Back to homepage
+//            Package: com.whatsapp event: 2 time: 08:57:31 Timestamp: 1698722851562 Class: com.whatsapp.Conversation
+//            Package: com.whatsapp event: 1 time: 08:57:31 Timestamp: 1698722851565 Class: com.whatsapp.HomeActivity
+
+//            exit the app
+//            Package: com.whatsapp event: 2 time: 08:58:00 Timestamp: 1698722880861 Class: com.whatsapp.HomeActivity
             if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND
                     || event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED
-                    || event.getEventType() == UsageEvents.Event.USER_INTERACTION
+//                    || event.getEventType() == UsageEvents.Event.USER_INTERACTION
                     || event.getEventType() == UsageEvents.Event.SCREEN_INTERACTIVE) {
                 String foregroundAppPackageName = event.getPackageName();
-
                 // Check if the foreground app's package name matches the one you're interested in
                 if (targetAppPackageNames.containsKey(foregroundAppPackageName) ){
                     // The target app is in the foreground and visible to the user
-                    return foregroundAppPackageName;
+                    resultPackageName=foregroundAppPackageName;
+                    status="1";
+                }
+            }
+            if (event.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED || event.getEventType()==UsageEvents.Event.MOVE_TO_BACKGROUND) {
+                String foregroundAppPackageName = event.getPackageName();
+                // Check if the foreground app's package name matches the one you're interested in
+                if (targetAppPackageNames.containsKey(foregroundAppPackageName) ){
+                    // The target app is in the foreground and visible to the user
+                    resultPackageName=foregroundAppPackageName;
+                    status="2";
                 }
             }
         }
-        return "";
+        Pair<String,String> res=Pair.create(resultPackageName,status);
+        return res;
     }
     public String monitorForegroundApp() {
 
@@ -245,9 +274,9 @@ public class NotificationForegroundService extends Service {
 
         if (usageStatsList != null && !usageStatsList.isEmpty()) {
             for (UsageStats usageStats : usageStatsList) {
-                if (usageStats.getLastTimeUsed() >= (currentTime - 300)) {
+                if (usageStats.getLastTimeUsed() >= (currentTime - 499)) {
                     String packagename = usageStats.getPackageName();
-//                    System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()));
+                    System.out.println("Packagename : "+ usageStats.getPackageName()+" Time: "+ formatMillisecondsToTime(usageStats.getLastTimeUsed()) + " Last: "+usageStats.getLastTimeUsed());
 //                    System.out.println("package: "+usageStats.getPackageName());
                     if (targetAppPackageNames.containsKey(packagename)) {
                         return packagename;
